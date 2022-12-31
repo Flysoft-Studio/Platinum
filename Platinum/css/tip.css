@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    font-family: sans-serif;
+    forced-color-adjust: none !important;
+}
+
+.tip {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(70, 70, 70, 0.9);
+    color: rgb(255, 255, 255);
+    padding: 10px 20px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
+}
+
+.tip_show {
+    opacity: 1;
+}

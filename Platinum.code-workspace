@@ -1,0 +1,34 @@
+{
+    "folders": [
+        {
+            "path": "Website"
+        },
+        {
+            "path": "Platinum"
+        },
+        {
+            "path": "Design"
+        },
+        {
+            "path": "Theme"
+        },
+        {
+            "path": "Backup"
+        },
+        {
+            "path": "Installer"
+        },
+        {
+            "path": "Old website"
+        },
+        {
+            "path": "PlatinumHelper"
+        },
+        {
+            "path": "Virtual Box Project"
+        }
+    ],
+    "settings": {
+        "liveServer.settings.multiRootWorkspaceName": "Platinum"
+    }
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title class="text">{ups_title}</title>
+    <script>
+        let js = require("../build/pages/update.js");
+    </script>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/info.css">
+</head>
+
+<body>
+    <div class="info">
+        <div class="info_vertical">
+            <img src="../img/common/poster.png" alt="POSTER" class="info_img">
+            <div class="info_content">
+                <div class="info_title text">{ups_title}</div>
+                <div class="info_body text" id="update_version">{ups_body}</div>
+                <div class="info_btn">
+                    <button class="button ripple text" onclick="js.whatsnewAction();">{com_whatsnew}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

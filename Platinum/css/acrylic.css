@@ -1,0 +1,10 @@
+.bg {
+    position: absolute;
+    z-index: -1000000;
+    background-size: 100% 100%;
+    transition: opacity 0.2s ease;
+}
+
+.show_dialog .bg {
+    opacity: 0.3 !important;
+}

@@ -1,0 +1,10 @@
+.tetris {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--tetris-background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: #94949438 0px 0px 20px;
+}

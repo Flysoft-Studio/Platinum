@@ -1,0 +1,59 @@
+.button {
+    padding: 10px 16px;
+    border-radius: 5px;
+    color: var(--button-primary-color);
+    background-color: var(--button-primary-bg);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none !important;
+    transition: opacity 0.2s var(--cubic-bezier);
+    outline: none;
+    border: none;
+    text-align: center;
+    --shadow-x: 0px;
+    --shadow-y: 0px;
+}
+
+.button_lalign {
+    text-align: left;
+}
+
+.button::before {
+    --shadow-diameter: 120px;
+    opacity: 0;
+    position: absolute;
+    content: "";
+    left: calc(var(--shadow-x) - var(--shadow-diameter) / 2);
+    top: calc(var(--shadow-y) - var(--shadow-diameter) / 2);
+    width: var(--shadow-diameter);
+    height: var(--shadow-diameter);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.5), transparent 60%);
+    background-size: 100% 100%;
+    transition: opacity 0.2s var(--cubic-bezier);
+}
+
+.button:not(.no_hover):hover {
+    opacity: 0.9;
+}
+
+.button:active::before {
+    opacity: 1;
+    --shadow-diameter: 1000px;
+    transition: left 1s var(--cubic-bezier), top 1s var(--cubic-bezier), width 1s var(--cubic-bezier), height 1s var(--cubic-bezier);
+}
+
+.button:not(.no_hover):hover::before {
+    opacity: 1;
+}
+
+.button:focus-visible {
+    border: var(--button-primary-focus-border) 3px solid;
+}
+
+.button>* {
+    color: inherit !important;
+}
+
+.button_icon {
+    width: 20px;
+}

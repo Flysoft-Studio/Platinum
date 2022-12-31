@@ -1,0 +1,9 @@
+libs/fontawesome.pro.js
+dist
+build
+vercel
+wrapper/linux/*/node
+wrapper/win32/*/node.exe
+docker
+node_modules
+.vscode

@@ -1,0 +1,946 @@
+@font-face {
+    font-family: "Comfortaa";
+    src: url(../fonts/Comfortaa.ttf);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    font-family: sans-serif;
+    forced-color-adjust: none !important;
+    /* switch between light and dark */
+    /* transition: background-color 0.1s var(--cubic-bezier), color 0.1s var(--cubic-bezier); */
+}
+
+*,
+*::before,
+*::after {
+    --cubic-bezier: cubic-bezier(0.65, 0.05, 0.1, 1);
+    --cubic-bezier-smooth: ease;
+    --title-height: 42px;
+    --nav-height: 45px;
+    --nav-user-background: rgba(0, 0, 0, 0.1);
+    --fav-height: 36px;
+    --toparea-collapsed-height: 20px;
+    --toparea-height: calc(var(--toparea-no-favbar-height) + var(--fav-height));
+    --toparea-no-favbar-height: calc(var(--title-height) + var(--nav-height));
+    --color-cl: transparent;
+    --color-img: linear-gradient(to right, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 70%, transparent 100%);
+    --hover-color-cl: var(--color-cl);
+    --hover-color-img: var(--color-img);
+    --tab-background: rgba(255, 255, 255, 0.4);
+    --tab-hover: rgba(0, 0, 0, 0.05);
+    --light-border: rgba(0, 0, 0, 0.2);
+    --app-background: rgba(255, 255, 255, 0.8);
+    --card-background: rgba(255, 255, 255, 0.4);
+    --card-transparent-background: transparent;
+    --menu-background: rgba(255, 255, 255, 0.8);
+    --menu-background-opaque: rgb(241, 241, 241);
+    --menu-item-color: var(--button-color);
+    --menu-item-hover-background: rgba(0, 0, 0, 0.1);
+    --menu-section-border: rgba(0, 0, 0, 0.1);
+    --menu-backdrop: rgb(230, 230, 230);
+    --text-color: rgb(0, 0, 0);
+    --text-sub-color: rgb(66, 66, 66);
+    --focus-color: rgb(134, 134, 134);
+    --theme-color: rgb(0, 120, 212);
+    --button-color: rgb(0, 0, 0);
+    --button-border: rgb(230, 230, 230);
+    --button-theme-color: rgb(255, 255, 255);
+    --button-theme-background: var(--theme-color);
+    --button-hover: rgba(0, 0, 0, 0.1);
+    --button-hover-color: var(--button-color);
+    --button-hover-border: var(--focus-color);
+    --button-hoverbg-color: var(--button-color);
+    --button-hoverbg-hover: var(--button-hover);
+    --button-hoverbg-hover-color: var(--button-hover-color);
+    --button-normal: rgb(228, 228, 228);
+    --radio-group-item-background: rgba(255, 255, 255, 0.4);
+    --radio-group-item-hover-background: rgba(255, 255, 255, 0.2);
+    --radio-group-item-hover-color: var(--button-color);
+    --checkbox-border: #4d4d4d;
+    --checkbox-background: rgb(58, 58, 58);
+    --checkbox-hover-background: rgba(0, 0, 0, 0.2);
+    --checkbox-open-dot-background: rgb(255, 255, 255);
+    --checkbox-close-dot-background: rgb(0, 0, 0);
+    --input-color: rgb(51, 51, 51);
+    --input-select-color: rgb(255, 255, 255);
+    --input-select-background: var(--theme-color);
+    --input-border: rgb(202, 202, 202);
+    --sidebar-background: rgb(228, 228, 228);
+    --url-bar-color: rgb(38, 38, 38);
+    --url-bar-background: rgba(255, 255, 255, 0.4);
+    --title-btn-close-color: rgb(255, 255, 255);
+    --title-btn-close-background: rgb(255, 0, 0);
+    --page-compatible-background: rgba(255, 255, 255, 0.8);
+    --highlight-border: unset;
+    --home-background: rgb(60, 60, 60);
+    --home-main-background: rgba(74, 74, 74, 0.5);
+    --home-time-color: rgb(255, 255, 255);
+    --home-search-color: rgb(0, 0, 0);
+    --home-search-background: rgba(255, 255, 255, 0.6);
+    --home-btn-color: rgb(255, 255, 255);
+    --home-btn-hover: rgba(255, 255, 255, 0.1);
+    --home-btn-hover-color: var(--home-btn-color);
+    --dialog-background: rgb(255, 255, 255);
+    --dialog-mask-background: rgba(255, 255, 255, 0.5);
+    --media-background: rgb(55, 55, 55);
+    --media-color: rgb(255, 255, 255);
+    --media-sub-color: rgb(165, 165, 165);
+    --media-light-color: rgb(255, 255, 255);
+    --media-light-sub-color: rgb(220, 220, 220);
+    --loading-color: var(--theme-color);
+    --loading-active-color: var(--theme-color);
+    --tetris-background: rgba(46, 46, 46, 0.9);
+    --toparea-collapsed-background: rgb(255, 255, 255);
+    --toparea-collapsed-color: rgb(140, 140, 140);
+    --toparea-collapsed-border: var(--focus-color);
+    --progressbar-background: rgb(215, 215, 215);
+    --progressbar-color: var(--theme-color);
+    --ripple-color: rgba(0, 0, 0, 0.05);
+    --ripple-border: rgba(0, 0, 0, 0.2);
+}
+
+body {
+    background-color: transparent;
+}
+
+::selection {
+    color: var(--input-select-color);
+    background-color: var(--input-select-background);
+}
+
+.sortable-drag {
+    cursor: pointer;
+    opacity: 0;
+}
+
+.template {
+    display: none !important;
+}
+
+.svg_loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text {
+    color: var(--text-color);
+}
+
+.text_sub {
+    color: var(--text-sub-color);
+}
+
+@media not (forced-colors: active) {
+    .spotlight .ripple {
+        position: relative;
+        overflow: hidden;
+        border: none;
+        outline: none;
+        box-shadow: none;
+        transition: opacity 0.1s var(--cubic-bezier);
+        --ripple-x: 0px;
+        --ripple-y: 0px;
+        --degree: 0deg;
+    }
+
+    .spotlight .ripple::before {
+        --ripple-diameter: 120px;
+        opacity: 0;
+        position: absolute;
+        content: "";
+        left: calc(var(--ripple-x) - var(--ripple-diameter) / 2);
+        top: calc(var(--ripple-y) - var(--ripple-diameter) / 2);
+        width: var(--ripple-diameter);
+        height: var(--ripple-diameter);
+        background-image: radial-gradient(var(--ripple-color), transparent 60%);
+        background-size: 100% 100%;
+        transition: opacity 0.1s var(--cubic-bezier);
+        pointer-events: none;
+    }
+
+    .spotlight .ripple::after {
+        opacity: 0;
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        -webkit-mask-image: linear-gradient(var(--border-degree), rgba(255, 255, 255, 1), transparent);
+        mask-image: unset;
+        border: var(--ripple-border) 2px solid;
+        border-radius: inherit;
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .spotlight .ripple_hover {
+        opacity: 0.9;
+    }
+
+    .spotlight .ripple:active::before,
+    .spotlight .ripple_active::before {
+        opacity: 1;
+        --ripple-diameter: 1000px;
+        transition: left 1s var(--cubic-bezier), top 1s var(--cubic-bezier), width 1s var(--cubic-bezier), height 1s var(--cubic-bezier);
+    }
+
+    .spotlight .ripple_hover::before {
+        opacity: 1;
+    }
+
+    .spotlight .ripple_hover::after {
+        opacity: var(--border-opacity);
+    }
+}
+
+.menu {
+    backdrop-filter: blur(10px);
+    background-color: var(--menu-background);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    visibility: hidden;
+    position: fixed;
+    min-width: 220px;
+    max-height: calc(100vh - 20px);
+    opacity: 0;
+    padding: 2px 4px;
+    border: var(--light-border) 1px solid;
+    box-shadow: #0000001c 0px 0px 5px 1px;
+    border-radius: 8px;
+    outline: none;
+    overflow-y: auto;
+    z-index: 4000000;
+    transition: opacity 0.2s var(--cubic-bezier);
+}
+
+/* a workaround for "the background blur effect displays incorrectly when system backdrop is turned on." */
+.menu_backdrop {
+    background-color: var(--menu-backdrop);
+    position: fixed;
+    width: 0;
+    height: 0;
+    border-radius: 8px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1000000;
+    transition: opacity 0.2s var(--cubic-bezier);
+}
+
+.menu_backdrop::before {
+    content: "";
+    position: absolute;
+    z-index: 100;
+    background-color: var(--theme-color);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.2;
+    border-radius: inherit;
+}
+
+/* no system backdrop, so don't need to render */
+.use_blur .menu_backdrop {
+    display: none;
+}
+
+.low_performance .menu {
+    backdrop-filter: none;
+    background-color: var(--menu-background-opaque);
+}
+
+.menu>div {
+    padding: 2px 0;
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    border-bottom: var(--light-border) 1.2px solid;
+}
+
+.menu_item {
+    color: var(--button-color);
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    max-width: 400px;
+    min-width: 200px;
+    font-size: 14px;
+    transition: background-color 0.05s var(--cubic-bezier), color 0.05s var(--cubic-bezier);
+}
+
+.menu_item:not(.menu_item_advanced)>* {
+    pointer-events: none;
+}
+
+.menu_item:hover:not(.no_active),
+.menu_item:focus-visible:not(.no_active) {
+    background-color: var(--menu-item-hover-background);
+    color: var(--menu-item-color);
+}
+
+.menu_icon {
+    color: inherit;
+    margin-right: 10px;
+    font-size: 18px;
+    min-width: var(--fa-fw-width, 1.25em);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu_item:not(.menu_item_advanced)>.text {
+    text-align: left;
+    color: inherit;
+    font-size: inherit;
+    margin-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu_item_wrap:not(.menu_item_advanced) {
+    overflow: hidden;
+    align-items: flex-start;
+}
+
+.menu_item_wrap:not(.menu_item_advanced)>.text {
+    white-space: normal;
+    word-break: break-word;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--card-background);
+    box-shadow: 0px 0px 20px 0px rgb(0, 0, 0, 0.1);
+    max-width: 700px;
+    border-radius: 5px;
+}
+
+.list_item {
+    padding: 0 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    height: 42px;
+}
+
+.list_item_remove {
+    pointer-events: none;
+    animation: list_item_remove 0.3s var(--cubic-bezier) forwards;
+}
+
+.low_performance .list_item_remove {
+    animation: list_item_remove_lowperf 0.3s var(--cubic-bezier) forwards;
+}
+
+.no_animation .list_item_remove {
+    display: none;
+}
+
+@keyframes list_item_remove {
+    0% {
+        overflow: hidden;
+    }
+
+    100% {
+        overflow: hidden;
+        height: 0;
+    }
+}
+
+@keyframes list_item_remove_lowperf {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.list_icon {
+    width: 18px;
+    height: 18px;
+    margin: 4px;
+}
+
+.list_title {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-width: 0;
+}
+
+.list_title_text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 15px;
+}
+
+.list_other {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-width: 0;
+    gap: 10px;
+}
+
+.list_other_text {
+    font-size: 12px;
+    color: var(--text-sub-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list_other_text_primary {
+    flex: 1;
+}
+
+.list_btns>button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    color: var(--button-color);
+    background-color: transparent;
+    font-size: 16px;
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+}
+
+.list_btns>button:hover {
+    color: var(--button-hover-color);
+    background-color: var(--button-hover);
+}
+
+.list_btns>button:focus-visible {
+    box-shadow: 0 0 0 1px var(--focus-color);
+}
+
+.option_group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.option_group_item {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.option_group_item>input {
+    position: absolute;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    outline: none;
+    border: none;
+    border: transparent 1px solid;
+}
+
+.option_group_item>div {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 50%;
+    border: var(--checkbox-border) 1px solid;
+}
+
+.option_group_item>input:hover~div {
+    background-color: var(--checkbox-hover-background);
+}
+
+.option_group_item>input:checked~div {
+    position: relative;
+    background-color: var(--theme-color);
+    border: var(--theme-color) 1px solid;
+}
+
+.option_group_item>input:checked~div::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    bottom: 5px;
+    right: 5px;
+    pointer-events: none;
+    border-radius: 50%;
+    background-color: var(--checkbox-open-dot-background);
+}
+
+.option_group_item>span {
+    display: none;
+}
+
+.option_group_item>input:checked~span {
+    display: block;
+}
+
+.radio_group {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.radio_group_item {
+    border-radius: 8px;
+    background-color: var(--radio-group-item-background);
+    position: relative;
+    transition: background-color 0.1s var(--cubic-bezier);
+    box-shadow: 0px 0px 20px 0px rgb(0, 0, 0, 0.1);
+    opacity: 1;
+}
+
+.radio_group_item:hover {
+    background-color: var(--radio-group-item-hover-background);
+}
+
+.radio_group_item>input {
+    border-radius: inherit;
+    appearance: none;
+    outline: none;
+    position: absolute !important;
+    width: 100%;
+    height: 100%;
+    transition: box-shadow 0.1s var(--cubic-bezier);
+}
+
+.radio_group_item>input:checked {
+    box-shadow: inset 0 0 0 3px var(--theme-color);
+}
+
+.radio_group_item>div {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    border: var(--light-border) 1px solid;
+    border-radius: inherit;
+}
+
+.radio_group_item>div>label {
+    color: var(--button-color);
+    font-size: 14px;
+    transition: color 0.2s var(--cubic-bezier);
+}
+
+.radio_group_item:hover>div>label {
+    color: var(--radio-group-item-hover-color);
+}
+
+.radio_group_item_img {
+    width: 100px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.color {
+    border-radius: 3px;
+    outline: none;
+    border: var(--highlight-border) 1px solid;
+}
+
+.checkbox {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    overflow: hidden;
+}
+
+.checkbox>input {
+    width: 40px;
+    height: 20px;
+    appearance: none;
+    background: transparent;
+    border: var(--checkbox-border) 1px solid;
+    border-radius: 20px;
+    outline: none;
+}
+
+.checkbox>input:hover {
+    background-color: var(--checkbox-hover-background);
+}
+
+.checkbox>input:checked {
+    background-color: var(--theme-color);
+    border: var(--theme-color) 1px solid;
+}
+
+.checkbox>div {
+    position: absolute;
+    transition: left 0.1s var(--cubic-bezier), background-color 0.1s var(--cubic-bezier);
+    pointer-events: none;
+    top: 5px;
+    left: 5px;
+    border-radius: 10px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--checkbox-close-dot-background);
+}
+
+.checkbox>input:checked~div {
+    left: 25px;
+    background-color: var(--checkbox-open-dot-background) !important;
+}
+
+.input {
+    color: var(--input-color);
+    padding: 5px;
+    outline: none;
+    background-color: transparent;
+    font-size: 14px;
+    border: var(--input-border) 1px solid;
+    border-radius: 5px;
+    transition: border 0.1s var(--cubic-bezier);
+}
+
+.input:focus {
+    border: var(--theme-color) 1px solid;
+}
+
+.button {
+    color: var(--button-theme-color);
+    background-color: var(--button-theme-background);
+    padding: 5px 15px;
+    border: none;
+    outline: none;
+    transition: opacity 0.1s var(--cubic-bezier);
+    border-radius: 3px;
+}
+
+.button>* {
+    pointer-events: none;
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+.button_normal {
+    color: var(--button-color);
+    background-color: var(--button-normal);
+    border: var(--highlight-border) 1px solid;
+}
+
+.color:focus-visible,
+.button:focus-visible,
+.checkbox>input:focus-visible,
+.option_group_item>input:focus-visible {
+    border: var(--focus-color) 2px solid;
+}
+
+.user_tips {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.user_tips_syncing {
+    color: rgb(0, 123, 255);
+}
+
+.user_tips_syncing>*:nth-child(1) {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+.user_tips_idle {
+    color: rgb(12, 179, 0);
+}
+
+.user_tips_error {
+    color: rgb(218, 152, 0);
+}
+
+.user_tips_unset {
+    color: var(--text-sub-color);
+}
+
+.user_tips>* {
+    color: inherit;
+    white-space: nowrap;
+}
+
+.user_box {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--nav-user-background);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.user_default {
+    font-size: 15px;
+}
+
+.user_picture {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.icon {
+    font-size: 18px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-color);
+}
+
+.hide {
+    display: none !important;
+}
+
+.blue {
+    color: var(--theme-color);
+}
+
+.fadeout_text {
+    background-image: var(--color-img);
+    color: var(--color-cl);
+    background-clip: text;
+    -webkit-background-clip: text;
+    text-overflow: unset;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.link {
+    position: relative;
+    color: var(--theme-color);
+    text-decoration: none !important;
+    padding-bottom: 3px;
+}
+
+.link_disabled {
+    pointer-events: none;
+    outline: none !important;
+    border: none !important;
+}
+
+.link_disabled:not(.link_disabled_noline) {
+    text-decoration: line-through !important;
+}
+
+.link:not(.link_disabled):focus-visible {
+    border-radius: 3px;
+    outline: var(--focus-color) solid 2px;
+}
+
+.link:after {
+    content: "";
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    height: 1.5px;
+    background-color: var(--theme-color);
+    transition: left 0.3s var(--cubic-bezier), right 0.3s var(--cubic-bezier);
+}
+
+.link:not(.link_disabled):hover::after {
+    left: 0;
+    right: 0;
+}
+
+.link_white {
+    color: var(--text-color);
+}
+
+.link_white::after {
+    background-color: var(--text-color);
+}
+
+@media (prefers-color-scheme: dark) {
+
+    *,
+    *::before,
+    *::after {
+        --nav-user-background: rgba(255, 255, 255, 0.3);
+        --color-img: linear-gradient(to right, #fff 0%, #fff 70%, transparent 100%);
+        --tab-background: rgba(255, 255, 255, 0.15);
+        ;
+        --tab-hover: rgba(255, 255, 255, 0.05);
+        --light-border: rgba(255, 255, 255, 0.2);
+        --app-background: rgba(56, 56, 56, 0.9);
+        --card-background: rgba(255, 255, 255, 0.05);
+        --menu-background: rgba(56, 56, 56, 0.8);
+        --menu-background-opaque: rgb(44, 44, 44);
+        --menu-item-hover-background: rgba(255, 255, 255, 0.1);
+        --menu-backdrop: rgb(66, 66, 66);
+        --text-color: rgb(255, 255, 255);
+        --text-sub-color: rgb(165, 165, 165);
+        --focus-color: rgb(160, 160, 160);
+        --theme-color: rgb(96, 194, 234);
+        --button-color: rgb(245, 245, 245);
+        --button-border: rgb(80, 80, 80);
+        --button-hover: rgba(255, 255, 255, 0.15);
+        --button-theme-color: rgb(40, 40, 40);
+        --button-normal: rgb(56, 56, 56);
+        --radio-group-item-background: rgba(255, 255, 255, 0.05);
+        --radio-group-item-hover-background: rgba(255, 255, 255, 0.1);
+        --checkbox-border: #757575;
+        --checkbox-background: rgb(58, 58, 58);
+        --checkbox-hover-background: rgba(255, 255, 255, 0.2);
+        --checkbox-open-dot-background: #ffffff;
+        --checkbox-close-dot-background: var(--checkbox-open-dot-background);
+        --input-color: #eeeeee;
+        --input-border: #727272;
+        --sidebar-background: rgb(78, 78, 78);
+        --url-bar-color: rgb(255, 255, 255);
+        --url-bar-background: rgba(255, 255, 255, 0.15);
+        --title-btn-close-color: #fff;
+        --title-btn-close-background: rgb(255, 0, 0);
+        --page-compatible-background: rgba(255, 255, 255, 0.95);
+        --dialog-background: rgb(40, 40, 40);
+        --dialog-mask-background: rgba(52, 52, 52, 0.8);
+        --toparea-collapsed-background: rgb(54, 54, 54);
+        --toparea-collapsed-color: rgb(244, 244, 244);
+        --ripple-color: rgba(255, 255, 255, 0.15);
+        --ripple-border: rgba(255, 255, 255, 0.4);
+    }
+}
+
+@media (forced-colors: active) {
+
+    *,
+    *::before,
+    *::after {
+        --nav-user-background: transparent;
+        --title-height: 48px;
+        --color-cl: var(--button-color);
+        --color-img: unset;
+        --hover-color-cl: HighlightText;
+        --theme-color: Highlight !important;
+        --card-background: ButtonFace;
+        --focus-color: Highlight;
+        --tab-background: Highlight;
+        --tab-hover: Highlight;
+        --light-border: var(--highlight-border);
+        --app-background: ButtonFace !important;
+        --card-background: ButtonFace;
+        --card-transparent-background: ButtonFace;
+        --menu-background: ButtonFace;
+        --menu-background-opaque: Highlight;
+        --menu-item-hover-background: Highlight;
+        --menu-item-color: HighlightText;
+        --text-color: CanvasText;
+        --text-sub-color: GrayText;
+        --focus-color: ButtonText;
+        --button-color: ButtonText;
+        --button-border: Highlight;
+        --button-theme-color: HighlightText;
+        --button-theme-background: Highlight;
+        --button-hover: Highlight;
+        --button-hover-color: HighlightText;
+        --button-hover-border: transparent;
+        --button-hoverbg-color: HighlightText;
+        --button-hoverbg-hover: ButtonFace;
+        --button-hoverbg-hover-color: ButtonText;
+        --button-normal: ButtonFace;
+        --radio-group-item-background: transparent;
+        --radio-group-item-hover-background: Highlight;
+        --radio-group-item-hover-color: HighlightText;
+        --checkbox-border: Highlight;
+        --checkbox-background: transparent;
+        --checkbox-hover-background: transparent;
+        --checkbox-open-dot-background: HighlightText;
+        --checkbox-close-dot-background: Highlight;
+        --input-color: ButtonText;
+        --input-select-color: HighlightText;
+        --input-border: Highlight;
+        --sidebar-background: ButtonFace;
+        --url-bar-color: ButtonText;
+        --url-bar-background: transparent;
+        --page-compatible-background: unset;
+        --highlight-border: Highlight;
+        --home-background: ButtonFace;
+        --dialog-background: ButtonFace;
+        --dialog-mask-background: ButtonFace;
+        --loading-color: Highlight;
+        --loading-active-color: HighlightText;
+        --toparea-collapsed-background: ButtonFace;
+        --toparea-collapsed-color: ButtonText;
+        --toparea-collapsed-border: Highlight;
+    }
+
+    .bg {
+        display: none !important;
+    }
+
+    /* hides invisible blur effect to save resources */
+    .menu {
+        backdrop-filter: none !important;
+    }
+
+    /* no system backdrop, so don't need to render */
+    .menu_backdrop {
+        display: none;
+    }
+
+    .menu_item_border:hover:not(.no_active),
+    .menu_item_border:focus-visible:not(.no_active) {
+        background-color: transparent !important;
+        box-shadow: 0 0 0 2px var(--highlight-border);
+    }
+
+    .fadeout_text.no_forcecolor {
+        color: transparent;
+    }
+
+    .fadeout_text:not(.no_forcecolor) {
+        background-image: none !important;
+        background-color: transparent !important;
+        background-clip: unset !important;
+        text-overflow: ellipsis !important;
+        -webkit-background-clip: unset;
+    }
+}

@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title class="text">{set_title}</title>
+    <script src="../libs/fontawesome.pro.js"></script>
+    <script>
+        let js = require("../build/pages/settings.js");
+    </script>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+</head>
+
+<body>
+    <div id="app">
+        <div id="sidebar">
+            <h1 id="sidebar_title" class="text">{set_title}</h1>
+            <div id="sidebar_items" role="tablist">
+                <div class="sidebar_item" id="sidebar_user">
+                    <div><i class="fal fa-id-badge fa-fw"></i></div>
+                    <div class="text">{set_user}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="user" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_homepage">
+                    <div><i class="fal fa-house-blank fa-fw"></i></div>
+                    <div class="text">{set_homepage}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="homepage" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_appearance">
+                    <div><i class="fal fa-palette fa-fw"></i></div>
+                    <div class="text">{set_appearance}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="appearance" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_pfm">
+                    <div><i class="far fa-gauge-max fa-fw"></i></div>
+                    <div class="text">{set_pfm}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="pfm" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_language">
+                    <div><i class="far fa-language fa-fw"></i></div>
+                    <div class="text">{set_language}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="language" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_clear">
+                    <div><i class="fal fa-arrow-left-rotate fa-fw"></i></div>
+                    <div class="text">{set_clear}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="clear" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_dev">
+                    <div><i class="fal fa-wrench fa-fw"></i></div>
+                    <div class="text">{set_dev}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="dev" role="tab">
+                </div>
+                <div class="sidebar_item" id="sidebar_about">
+                    <div><i class="fal fa-circle-info fa-fw"></i></div>
+                    <div class="text">{set_about}</div>
+                    <input class="ripple" type="radio" name="sidebar" data-tab="about" role="tab">
+                </div>
+                <div class="sidebar_item hide" id="sidebar_egg">
+                    <input class="ripple" type="radio" name="sidebar" data-tab="egg" role="tab">
+                </div>
+            </div>
+        </div>
+        <div id="sidebar_open">
+            <input type="checkbox"></input>
+            <i class="far fa-bars fa-fw"></i>
+        </div>
+        <div id="tabs">
+            <div class="tab" id="tab_user">
+                <h2 class="tab_title text">{set_user}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="user_box" id="set_user_main_picture">
+                                        <i class="user_default fas fa-user fa-fw"></i>
+                                        <img class="user_picture hide">
+                                    </div>
+                                    <div class="group_vertical" id="set_user_main_info">
+                                        <div class="label text" id="set_user_main_name"></div>
+                                        <div class="user_tips user_tips_syncing">
+                                            <i class="fas fa-rotate fa-fw"></i>
+                                            <span class="text">{user_syncing}</span>
+                                        </div>
+                                        <div class="user_tips user_tips_idle hide">
+                                            <i class="fas fa-cloud-check fa-fw"></i>
+                                            <span class="text">{user_idle}</span>
+                                        </div>
+                                        <div class="user_tips user_tips_error hide">
+                                            <i class="fas fa-triangle-exclamation fa-fw"></i>
+                                            <span class="text">{user_error}</span>
+                                        </div>
+                                        <div class="user_tips user_tips_unset hide">
+                                            <i class="fas fa-cloud-slash fa-fw"></i>
+                                            <span class="text">{user_unset}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_user_sync}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text" for="set_user_sync_enable">{set_user_sync_enable}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="user.sync.enable" data-control="set_user_sync"
+                                            class="control" id="set_user_sync_enable">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="set_user_sync">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text" for="set_user_sync_token">
+                                            {set_user_sync_token}</label>
+                                    </div>
+                                    <div class="group_right">
+                                        <input type="password" data-item="user.sync.token" class="input control"
+                                            spellcheck="false" id="set_user_sync_token">
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <p class="label_sub label_multi">
+                                            <span class="text">{set_user_sync_token_info_part1}</span>
+                                            <a class="link text"
+                                                href="https://github.com/settings/tokens/new?scopes=gist&description=Platinum%20Browser"
+                                                target="_blank">{set_user_sync_token_info_part2}</a>
+                                            <span class="text">{set_user_sync_token_info_part3}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_user_other}</h3>
+                        <div class="card_body" role="group">
+                            <div id="set_user_desktoplink">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text"
+                                            for="set_user_other_desktoplink">{set_user_other_desktoplink}
+                                        </label>
+                                    </div>
+                                    <div class="group_right">
+                                        <div class="checkbox">
+                                            <input type="checkbox" data-item="user.desktoplink" class="control"
+                                                id="set_user_other_desktoplink">
+                                            <div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text">{set_user_other_edit}</label>
+                                </div>
+                                <div class="group_right">
+                                    <button id="set_user_other_edit" class="button ripple text"
+                                        onclick="js.editUserAction();">{com_edit}</button>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text">{set_user_other_delete}</label>
+                                </div>
+                                <div class="group_right">
+                                    <button id="set_user_other_delete" class="button ripple text"
+                                        onclick="js.deleteUserAction();">{com_delete}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_homepage">
+                <h2 class="tab_title text">{set_homepage}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <h3 class="card_title text">{set_homepage_start}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text">{set_homepage_start_background}</label>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="option_group">
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="unsplash"
+                                                id="set_homepage_start_background_unsplash" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_start_background_unsplash">
+                                                {set_homepage_start_background_unsplash}</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="bing"
+                                                id="set_homepage_start_background_bing" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_start_background_bing">
+                                                {set_homepage_start_background_bing}</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="pixiv"
+                                                id="set_homepage_start_background_pixiv" class="control">
+                                            <div></div>
+                                            <label class="label text"
+                                                for="set_homepage_start_background_pixiv">{set_homepage_start_background_pixiv}
+                                            </label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="genshin"
+                                                id="set_homepage_start_background_genshin" class="control">
+                                            <div></div>
+                                            <label class="label text"
+                                                for="set_homepage_start_background_genshin">{set_homepage_start_background_genshin}
+                                            </label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="honkai"
+                                                id="set_homepage_start_background_honkai" class="control">
+                                            <div></div>
+                                            <label class="label text"
+                                                for="set_homepage_start_background_honkai">{set_homepage_start_background_honkai}
+                                            </label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="mc"
+                                                id="set_homepage_start_background_mc" class="control">
+                                            <div></div>
+                                            <label class="label text"
+                                                for="set_homepage_start_background_mc">{set_homepage_start_background_mc}
+                                            </label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="url"
+                                                id="set_homepage_start_background_url" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_start_background_url">
+                                                {set_homepage_start_background_url}</label>
+                                            <span>
+                                                <input type="url" data-item="home.start.background.url"
+                                                    class="input control" spellcheck="false">
+                                            </span>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="file"
+                                                id="set_homepage_start_background_file" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_start_background_file">
+                                                {set_homepage_start_background_file}</label>
+                                            <span>
+                                                <button id="set_homepage_start_background_file_select"
+                                                    class="button ripple text"
+                                                    onclick="js.homepageStartBackgroundFileAction();">{com_select_file}</button>
+                                            </span>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.start.background.uses" data-value="no"
+                                                id="set_homepage_start_background_no" class="control">
+                                            <div></div>
+                                            <label class="label text"
+                                                for="set_homepage_start_background_no">{set_homepage_start_background_no}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <p class="label_sub label_multi">
+                                        <span class="text">{set_homepage_start_background_info_pixiv_part1}</span>
+                                        <span class="text">{set_homepage_start_background_info_part1}</span>
+                                        <a class="link text" href="https://api.lolicon.app/#/setu"
+                                            target="_blank">{set_homepage_start_background_info_pixiv_part2}</a>
+                                        <span class="text">{set_homepage_start_background_info_part2}</span>
+                                        <span class="text">{set_homepage_start_background_info_horatio_part1}</span>
+                                        <span class="text">{set_homepage_start_background_info_part1}</span>
+                                        <a class="link text" href="https://api.443.fyi"
+                                            target="_blank">{set_homepage_start_background_info_horatio_part2}</a>
+                                        <span class="text">{set_homepage_start_background_info_part2}</span>
+                                        <span class="text">{set_homepage_start_background_info_part3}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_homepage_start_background_blur">{set_homepage_start_background_blur}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="home.start.background.blur" class="control"
+                                            id="set_homepage_start_background_blur">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_homepage_home}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_homepage_homebtn_show">{set_homepage_homebtn_show}
+                                    </label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="home.button.show" class="control"
+                                            id="set_homepage_homebtn_show">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text">{set_homepage_page}</label>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="option_group">
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.page.uses" data-value="start"
+                                                id="set_homepage_page_start" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_page_start">
+                                                {set_homepage_page_start}</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="home.page.uses" data-value="url"
+                                                id="set_homepage_page_url" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_homepage_page_url">
+                                                {set_homepage_page_url}</label>
+                                            <span>
+                                                <input type="url" data-item="home.page.url" class="input control"
+                                                    spellcheck="false">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_appearance">
+                <h2 class="tab_title text">{set_appearance}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <h3 class="card_title text">{set_appearance_overall}</h3>
+                        <div class="card_body card_transparent" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="radio_group">
+                                        <div class="radio_group_item">
+                                            <input type="radio" name="appearance.overall" data-value="system"
+                                                class="control ripple" id="set_appearance_overall_default">
+                                            <div>
+                                                <i class="radio_group_item_img svg_loader"
+                                                    data-url="dirname/img/settings/appearance/overall/default.svg"></i>
+                                                <label class="label text"
+                                                    for="set_appearance_overall_default">{set_appearance_overall_default}</label>
+                                            </div>
+                                        </div>
+                                        <div class="radio_group_item">
+                                            <input type="radio" name="appearance.overall" data-value="light"
+                                                class="control ripple" id="set_appearance_overall_light">
+                                            <div>
+                                                <i class="radio_group_item_img svg_loader"
+                                                    data-url="dirname/img/settings/appearance/overall/light.svg"></i>
+                                                <label class="label text"
+                                                    for="set_appearance_overall_light">{set_appearance_overall_light}</label>
+                                            </div>
+                                        </div>
+                                        <div class="radio_group_item">
+                                            <input type="radio" name="appearance.overall" data-value="dark"
+                                                class="control ripple" id="set_appearance_overall_dark">
+                                            <div>
+                                                <i class="radio_group_item_img svg_loader"
+                                                    data-url="dirname/img/settings/appearance/overall/dark.svg"></i>
+                                                <label class="label text" for="set_appearance_overall_dark">
+                                                    {set_appearance_overall_dark}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_appearance_tcolor}</h3>
+                        <div class="card_body">
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="option_group">
+                                        <div class="option_group_item">
+                                            <input type="radio" name="appearance.tcolor.uses" data-value="system"
+                                                id="set_appearance_tcolor_system" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_appearance_tcolor_system">
+                                                {set_appearance_tcolor_system}</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="appearance.tcolor.uses" data-value="theme"
+                                                id="set_appearance_tcolor_theme" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_appearance_tcolor_theme">
+                                                {set_appearance_tcolor_theme}</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="appearance.tcolor.uses" data-value="custom"
+                                                id="set_appearance_tcolor_custom" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_appearance_tcolor_custom">
+                                                {set_appearance_tcolor_custom}</label>
+                                            <span>
+                                                <input type="color" data-item="appearance.tcolor.custom"
+                                                    class="color control">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_appearance_visual}</h3>
+                        <div class="card_body" role="group">
+                            <div id="set_appearance_visual_blur">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text"
+                                            for="set_appearance_visual_blur">{set_appearance_visual_blur}</label>
+                                    </div>
+                                    <div class="group_right">
+                                        <div class="checkbox">
+                                            <input type="checkbox" data-item="appearance.visual.blur"
+                                                data-needrestart="true" data-control="set_appearance_visual_blur_other"
+                                                class="control" id="set_appearance_visual_blur">
+                                            <div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="set_appearance_visual_blur_other">
+                                    <div class="group">
+                                        <div class="group_left">
+                                            <label class="label text"
+                                                for="set_appearance_visual_fullblur">{set_appearance_visual_fullblur}</label>
+                                        </div>
+                                        <div class="group_right">
+                                            <div class="checkbox">
+                                                <input type="checkbox" data-item="appearance.visual.fullblur"
+                                                    class="control" id="set_appearance_visual_fullblur">
+                                                <div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group">
+                                        <div class="group_left">
+                                            <label class="label text"
+                                                for="set_appearance_visual_usebackdrop">{set_appearance_visual_usebackdrop}</label>
+                                        </div>
+                                        <div class="group_right">
+                                            <div class="checkbox">
+                                                <input type="checkbox" data-item="appearance.visual.usebackdrop"
+                                                    class="control" data-needrestart="true"
+                                                    data-control="set_appearance_visual_backdroptype"
+                                                    id="set_appearance_visual_usebackdrop">
+                                                <div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="set_appearance_visual_backdroptype">
+                                        <div class="group">
+                                            <div class="group_left">
+                                                <div class="option_group">
+                                                    <div class="option_group_item">
+                                                        <input type="radio" name="appearance.visual.backdroptype"
+                                                            data-value="2" data-needrestart="true"
+                                                            id="set_appearance_visual_backdroptype_mica"
+                                                            class="control">
+                                                        <div></div>
+                                                        <label class="label text"
+                                                            for="set_appearance_visual_backdroptype_mica">Mica</label>
+                                                    </div>
+                                                    <div class="option_group_item">
+                                                        <input type="radio" name="appearance.visual.backdroptype"
+                                                            data-value="3" data-needrestart="true"
+                                                            id="set_appearance_visual_backdroptype_acrylic"
+                                                            class="control">
+                                                        <div></div>
+                                                        <label class="label text"
+                                                            for="set_appearance_visual_backdroptype_acrylic">Acrylic</label>
+                                                    </div>
+                                                    <div class="option_group_item">
+                                                        <input type="radio" name="appearance.visual.backdroptype"
+                                                            data-value="4" data-needrestart="true"
+                                                            id="set_appearance_visual_backdroptype_tabbed"
+                                                            class="control">
+                                                        <div></div>
+                                                        <label class="label text"
+                                                            for="set_appearance_visual_backdroptype_tabbed">Tabbed</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_appearance_visual_spotlight">{set_appearance_visual_spotlight}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="appearance.visual.spotlight" class="control"
+                                            data-needrestart="true" id="set_appearance_visual_spotlight">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_appearance_visual_animation">{set_appearance_visual_animation}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="appearance.visual.animation" class="control"
+                                            id="set_appearance_visual_animation">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_appearance_visual_lowperformance">{set_appearance_visual_lowperformance}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="appearance.visual.lowperformance"
+                                            class="control" id="set_appearance_visual_lowperformance">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <p class="label_sub text">{set_appearance_visual_lowperformance_info}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card_title text">{set_appearance_behavior}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_appearance_behavior_askmulti">{set_appearance_behavior_askmulti}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="appearance.behavior.askmulti" class="control"
+                                            id="set_appearance_behavior_askmulti">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_pfm">
+                <h2 class="tab_title text">{set_pfm}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <h3 class="card_title text">{set_pfm_sys}</h3>
+                        <div class="card_body" role="group">
+                            <div id="set_pfm_sys_turbo">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text" for="set_pfm_sys_turbo">{set_pfm_sys_turbo}</label>
+                                    </div>
+                                    <div class="group_right">
+                                        <div class="checkbox">
+                                            <input type="checkbox" data-item="pfm.sys.turbo" class="control"
+                                                id="set_pfm_sys_turbo">
+                                            <div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <p class="label_sub text">{set_pfm_sys_turbo_info}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_pfm_sys_hardwareacceleration">{set_pfm_sys_hardwareacceleration}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="pfm.sys.hardwareacceleration" class="control"
+                                            data-needrestart="true" id="set_pfm_sys_hardwareacceleration">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" id="set_pfm_sleep">
+                        <h3 class="card_title text">{set_pfm_sleep}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text" for="set_pfm_sleep_enable">{set_pfm_sleep_enable}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="pfm.sleep.enable"
+                                            data-control="set_pfm_sleep_timeout" class="control"
+                                            id="set_pfm_sleep_enable">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <p class="label_sub text">{set_pfm_sleep_enable_info}</p>
+                                </div>
+                            </div>
+                            <div id="set_pfm_sleep_timeout">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text">{set_pfm_sleep_timeout}</label>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <div class="option_group">
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="1000"
+                                                    id="set_pfm_sleep_timeout_immediately" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_immediately">
+                                                    {set_pfm_sleep_timeout_immediately}</label>
+                                            </div>
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="60000"
+                                                    id="set_pfm_sleep_timeout_1min" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_1min">
+                                                    {set_pfm_sleep_timeout_1min}</label>
+                                            </div>
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="600000"
+                                                    id="set_pfm_sleep_timeout_10min" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_10min">
+                                                    {set_pfm_sleep_timeout_10min}</label>
+                                            </div>
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="1800000"
+                                                    id="set_pfm_sleep_timeout_30min" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_30min">
+                                                    {set_pfm_sleep_timeout_30min}</label>
+                                            </div>
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="3600000"
+                                                    id="set_pfm_sleep_timeout_1hour" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_1hour">
+                                                    {set_pfm_sleep_timeout_1hour}</label>
+                                            </div>
+                                            <div class="option_group_item">
+                                                <input type="radio" name="pfm.sleep.timeout" data-value="7200000"
+                                                    id="set_pfm_sleep_timeout_2hour" class="control">
+                                                <div></div>
+                                                <label class="label text" for="set_pfm_sleep_timeout_2hour">
+                                                    {set_pfm_sleep_timeout_2hour}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_language">
+                <h2 class="tab_title text">{set_language}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <h3 class="card_title text">{set_language_display}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="option_group">
+                                        <div class="option_group_item">
+                                            <input type="radio" name="language.uses" data-value="en-us"
+                                                id="set_language_en_us" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_language_en_us">English</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="language.uses" data-value="zh-cn"
+                                                id="set_language_zh_cn" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_language_zh_cn">中文 (简体)</label>
+                                        </div>
+                                        <div class="option_group_item">
+                                            <input type="radio" name="language.uses" data-value="zh-tw"
+                                                id="set_language_zh_tw" class="control">
+                                            <div></div>
+                                            <label class="label text" for="set_language_zh_tw">中文 (繁體)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_clear">
+                <h2 class="tab_title text">{set_clear}</h2>
+            </div>
+            <div class="tab" id="tab_dev">
+                <h2 class="tab_title text">{set_dev}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <h3 class="card_title text">{set_dev_gpu}</h3>
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_dev_ignore_gpu_blocklist">{set_dev_ignore_gpu_blocklist}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="dev.ignore_gpu_blocklist" class="control"
+                                            id="set_dev_ignore_gpu_blocklist">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_dev_enable_unsafe_webgpu">{set_dev_enable_unsafe_webgpu}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="dev.enable_unsafe_webgpu" class="control"
+                                            id="set_dev_enable_unsafe_webgpu">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group">
+                                <div class="group_left">
+                                    <label class="label text"
+                                        for="set_dev_disable_smooth_scrolling">{set_dev_disable_smooth_scrolling}</label>
+                                </div>
+                                <div class="group_right">
+                                    <div class="checkbox">
+                                        <input type="checkbox" data-item="dev.disable_smooth_scrolling" class="control"
+                                            id="set_dev_disable_smooth_scrolling">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_about">
+                <h2 class="tab_title text">{set_about}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <div class="card_body" role="group">
+                            <div class="group">
+                                <div class="group_left">
+                                    <i class="browser_icon svg_loader" data-url="dirname/platinum.svg"
+                                        aria-hidden="true"></i>
+                                    <div class="group_vertical">
+                                        <div class="label text browser_text">{com_name}</div>
+                                        <div class="label_sub" id="set_about_ver"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="set_about_update">
+                                <div class="group">
+                                    <div class="group_left">
+                                        <i id="set_about_update_updating" class="icon hide svg_loader"
+                                            data-url="dirname/img/common/loading.svg" aria-hidden="true"></i>
+                                        <div id="set_about_update_latest" class="icon hide blue">
+                                            <i class="fas fa-circle-check fa-fw"></i>
+                                        </div>
+                                        <div id="set_about_update_warning" class="icon hide blue">
+                                            <i class="fas fa-circle-exclamation fa-fw"></i>
+                                        </div>
+                                        <label class="label text" id="set_about_update_text" aria-live="polite"
+                                            for="set_about_update_btn_update"></label>
+                                    </div>
+                                    <div class="group_right">
+                                        <button id="set_about_update_btn_update" class="button ripple text"
+                                            onclick="js.updateAction();">{set_about_update_btn_update}</button>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label class="label text"
+                                            for="set_about_update_auto">{set_about_update_auto}</label>
+                                    </div>
+                                    <div class="group_right">
+                                        <div class="checkbox">
+                                            <input type="checkbox" data-item="update.auto" data-global="true"
+                                                class="control" id="set_about_update_auto">
+                                            <div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <div class="label text">{set_about_update_insider}</div>
+                                    </div>
+                                    <div class="group_right">
+                                        <button id="set_about_update_btn_insider_join" class="button ripple text hide"
+                                            onclick="js.insiderAction();">{set_about_update_btn_insider_join}</button>
+                                        <button id="set_about_update_btn_insider_exit" class="button ripple text hide"
+                                            onclick="js.insiderAction();">{set_about_update_btn_insider_exit}</button>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <div class="label_sub text">{set_about_update_insider_info}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card_body card_transparent">
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="group_vertical">
+                                        <div class="label_sub label_multi">
+                                            <span class="text">{set_about_info_based_part1}</span>
+                                            <a class="link text" href="https://www.chromium.org"
+                                                target="_blank">{set_about_info_based_part2}</a>
+                                            <span class="text">{set_about_info_based_part3}</span>
+                                            <a class="link text" id="set_about_info_based_license"
+                                                href="platinum://thirdpartysoftwares"
+                                                target="_blank">{set_about_info_based_part4}</a>
+                                            <span class="text">{set_about_info_based_part5}</span>
+                                        </div>
+                                        <div class="label_sub label_multi">
+                                            <span class="text">{set_about_info_copyright_part1}</span>
+                                            <span class="browser_text text">{set_about_info_copyright_part2}</span>
+                                            <span class="text">{set_about_info_copyright_part3}</span>
+                                        </div>
+                                        <div class="label_sub label_multi">
+                                            <a class="link text" href="platinum://sponsor"
+                                                target="_blank">{set_about_info_page_sponsor}</a>
+                                            <span class="text">{set_about_info_page_split}</span>
+                                            <a class="link text" href="https://flysoftapp.com/privacy-policy"
+                                                target="_blank">{set_about_info_page_privacy}</a>
+                                            <span class="text">{set_about_info_page_split}</span>
+                                            <a class="link text" href="https://platinum.flysoftapp.com/"
+                                                target="_blank">{set_about_info_page_website}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab" id="tab_egg">
+                <h2 class="tab_title text">{set_egg}</h2>
+                <div class="tab_body">
+                    <div class="card">
+                        <div class="card_body card_transparent">
+                            <div class="group">
+                                <div class="group_left">
+                                    <img src="../img/settings/egg/egg.png"
+                                        alt="Platinum Browser，谨以此作，献给我从 2018 到 2022 的编程生涯。" srcset=""
+                                        class="img_big img_autoadapt">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="group">
+                                <div class="group_left">
+                                    <div class="label text">{set_egg_whattheheck}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

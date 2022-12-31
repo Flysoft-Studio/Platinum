@@ -1,0 +1,89 @@
+body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    user-select: none;
+    font-family: sans-serif;
+}
+
+.error {
+    margin: 16vh 8vw;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.error_icon {
+    width: 60px;
+    padding-bottom: 5px;
+}
+
+.error_title {
+    font-size: 30px;
+}
+
+.error_detail {
+    font-size: 17px;
+}
+
+.error_title,
+.error_detail {
+    word-wrap: break-word;
+    word-break: normal;
+}
+
+.error_btns {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.error_btn {
+    padding: 10px;
+}
+
+.error_btn {
+    color: rgb(255, 255, 255);
+    background-color: var(--theme-color);
+    padding: 5px 15px;
+    border: none;
+    outline: none;
+    transition: opacity 0.1s ease;
+    border-radius: 3px;
+}
+
+.error_btn:not(#btn_game) {
+    display: none;
+}
+
+.error_btn:hover {
+    opacity: 0.8;
+}
+
+.error_btn:focus-visible {
+    box-shadow: inset 0 0 0 2px rgb(134, 134, 134);
+}
+
+.text {
+    color: rgb(0, 0, 0);
+}
+
+.text_sub {
+    color: rgb(78, 78, 78);
+}
+
+@media (prefers-color-scheme: dark) {
+    .error_icon {
+        filter: invert(1);
+    }
+
+    .text {
+        color: rgb(255, 255, 255);
+    }
+
+    .text_sub {
+        color: rgb(165, 165, 165);
+    }
+}
