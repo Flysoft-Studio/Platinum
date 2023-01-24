@@ -9,7 +9,7 @@
 -   NodeJS 16 ([https://nodejs.org](https://nodejs.org))
 -   TypeScript compiler (运行 npm i tsc -g)
 -   Docker for Windows (可选，如需要在 Windows 上构建 Linux 版需要此工具，需要把 package.json 后面的 c3e320779ef856d314f6443933aaa836000b0b7da4819d91a700692649f244bc 改成自己的容器 id，暂时不提供支持)
--   Advanced Installer 19.1 (可选，如需要在 Windows 上构建 UWP 版需要此工具，需要把 package.json 后面的 c3e320779ef856d314f6443933aaa836000b0b7da4819d91a700692649f244bc 改成自己的容器 id，暂时不提供支持)
+-   Advanced Installer 19.1 (可选，如需要在 Windows 上构建 UWP 版需要此工具，暂时不提供支持)
 
 ### 安装依赖
 
