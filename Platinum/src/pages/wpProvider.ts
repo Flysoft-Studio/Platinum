@@ -42,14 +42,3 @@ export async function getUnsplashWallpaper() {
         copyrightUrl: data.url,
     } as Browser.FSWallpaperProvider;
 }
-
-export async function getPixivWallpaper(r18mode: number = 0) {
-    // 不可以色色!
-    let data = (await (await fetch("https://api.lolicon.app/setu/v2?r18=" + r18mode + "&proxy=https://pixiv-img-flysoftbeta.vercel.app/{{path}}")).json()).data[0];
-    return {
-        url: await fetchWallpaper(data.urls.original, "jpeg"),
-        title: data.title,
-        copyright: data.author,
-        copyrightUrl: "https://pixiv.net/artworks/" + data.pid,
-    } as Browser.FSWallpaperProvider;
-}

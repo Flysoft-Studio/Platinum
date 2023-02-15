@@ -1,6 +1,11 @@
 import * as com from "../common/common";
 import * as lang from "../common/language";
-import { getBingWallpaper, getLocalWallpaper, getPixivWallpaper, getUnsplashWallpaper, getURLWallpaper } from "./wpProvider";
+import {
+    getBingWallpaper,
+    getLocalWallpaper,
+    getUnsplashWallpaper,
+    getURLWallpaper,
+} from "./wpProvider";
 import { ipcRenderer } from "electron";
 import { loadSVGs } from "../common/svgLoader";
 
@@ -74,10 +79,6 @@ ipcRenderer.on("load", async () => {
     let wpString: string;
     if (wpSource == "unsplash") wpProvider = await getUnsplashWallpaper();
     else if (wpSource == "bing") wpProvider = await getBingWallpaper();
-    else if (wpSource == "pixiv") wpProvider = await getPixivWallpaper();
-    else if (wpSource == "genshin") wpProvider = await getURLWallpaper("https://api.443.fyi/rpicgs/index.php");
-    else if (wpSource == "honkai") wpProvider = await getURLWallpaper("https://api.443.fyi/rpicgs/bh3.php");
-    else if (wpSource == "mc") wpProvider = await getURLWallpaper("https://api.443.fyi/rpicgs/minecraft.php");
     else if (wpSource == "url") wpProvider = await getURLWallpaper(com.store.get("home.start.background.url") as string);
     else if (wpSource == "file") wpProvider = await getLocalWallpaper(com.store.get("home.start.background.file") as string);
     if (wpProvider) wpString = "url(" + wpProvider.url + ")";
