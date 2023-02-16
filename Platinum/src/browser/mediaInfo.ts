@@ -1,10 +1,12 @@
 (() => {
     let meta = document.getElementsByTagName("meta");
     let getMeta = (value: string, prop: string) => {
-        let element = <HTMLMetaElement>document.querySelector("head>meta[" + prop + "=\"" + value + "\"]");
+        let element = <HTMLMetaElement>(
+            document.querySelector("head>meta[" + prop + '="' + value + '"]')
+        );
         if (element) return element.content;
         else return null;
-    }
+    };
 
     let title = getMeta("name", "itemprop");
     if (!title) title = getMeta("og:title", "property");

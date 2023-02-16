@@ -1413,8 +1413,16 @@ export function reload(lang: string) {
             var titles = document.getElementsByClassName("stitle");
             for (var i = 0; i < titles.length; i++) {
                 const element = <HTMLElement>titles.item(i);
-                var titleText = element.dataset["titletext"] || element.title || element.ariaLabel || element.ariaPlaceholder;
-                if (titleText && titleText.indexOf("{") != -1 && titleText.indexOf("}") != -1) {
+                var titleText =
+                    element.dataset["titletext"] ||
+                    element.title ||
+                    element.ariaLabel ||
+                    element.ariaPlaceholder;
+                if (
+                    titleText &&
+                    titleText.indexOf("{") != -1 &&
+                    titleText.indexOf("}") != -1
+                ) {
                     var titleLang = get(titleText);
 
                     if (element.title) element.title = titleLang;
@@ -1446,8 +1454,7 @@ export function get(msg: string, replace = [], fallback: boolean = true): string
     data = data.replace(/\[year\]/g, date.getFullYear().toString());
     let regexp = /(?<=\[use_)[^}]*(?=\])/;
     let match = data.match(regexp);
-    if (match)
-        data = data.replace("[use_" + match[0] + "]", get(match[0]));
+    if (match) data = data.replace("[use_" + match[0] + "]", get(match[0]));
     return data;
 }
 
@@ -1458,7 +1465,7 @@ export function analyse(sourceLang: string, targetLangs: Array<string>) {
         result[targetLang] = {
             missing: [],
             redundant: [],
-        }
+        };
         for (const item in _data[sourceLang]) {
             if (!_data[targetLang][item]) result[targetLang].missing.push(item);
         }

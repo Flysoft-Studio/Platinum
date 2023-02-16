@@ -8,7 +8,7 @@
     background-color: var(--home-background);
 }
 
-.startbg>div {
+.startbg > div {
     width: 100%;
     height: 100%;
     opacity: 0;
@@ -45,7 +45,7 @@
     transition: opacity 0.4s var(--cubic-bezier-smooth);
 }
 
-#search>input {
+#search > input {
     text-align: left;
     width: 300px;
     height: 40px;
@@ -61,7 +61,7 @@
     border: transparent 2px solid;
 }
 
-#search>input:focus {
+#search > input:focus {
     border: var(--theme-color) 2px solid;
 }
 
@@ -72,7 +72,7 @@
     margin: 10px;
 }
 
-#btns>button {
+#btns > button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,20 +88,20 @@
     border: var(--highlight-border) 1px solid;
 }
 
-#btns>button:hover {
+#btns > button:hover {
     color: var(--home-btn-hover-color);
     background-color: var(--home-btn-hover);
 }
 
-#btns_settings>* {
+#btns_settings > * {
     transition: transform 0.5s var(--cubic-bezier);
 }
 
-#btns_settings:hover>* {
+#btns_settings:hover > * {
     transform: rotateZ(90deg);
 }
 
-#btns_settings:active>* {
+#btns_settings:active > * {
     transform: rotateZ(120deg);
     transition: transform 0.2s var(--cubic-bezier);
 }
@@ -114,7 +114,7 @@
     text-align: center !important;
 }
 
-.sw-typography>a {
+.sw-typography > a {
     pointer-events: none !important;
     text-decoration: none !important;
 }

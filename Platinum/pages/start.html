@@ -1,37 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light dark" />
+        <title class="text">{start_title}</title>
+        <script src="../libs/fontawesome.pro.js"></script>
+        <script>
+            let js = require("../build/pages/start.js");
+        </script>
+        <link rel="stylesheet" href="../css/common.css" />
+        <link rel="stylesheet" href="../css/start.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <title class="text">{start_title}</title>
-    <script src="../libs/fontawesome.pro.js"></script>
-    <script>
-        let js = require("../build/pages/start.js");
-    </script>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/start.css">
-</head>
-
-<body>
-    <div class="startbg">
-        <div></div>
-    </div>
-    <div id="main">
-        <div id="time">Start</div>
-        <div id="search">
-            <input type="text" id="" placeholder="Search" spellcheck="false" class="stitle"
-                aria-placeholder="{start_search}">
+    <body>
+        <div class="startbg">
+            <div></div>
         </div>
-    </div>
-    <div id="btns">
-        <button id="btns_settings" class="stitle" title="{start_settings}">
-            <i class="fas fa-gear fa-fw"></i>
-        </button>
-    </div>
-    <div id="tp-weather-widget"></div>
-</body>
-
+        <div id="main">
+            <div id="time">Start</div>
+            <div id="search">
+                <input
+                    type="text"
+                    id=""
+                    placeholder="Search"
+                    spellcheck="false"
+                    class="stitle"
+                    aria-placeholder="{start_search}"
+                />
+            </div>
+        </div>
+        <div id="btns">
+            <button id="btns_settings" class="stitle" title="{start_settings}">
+                <i class="fas fa-gear fa-fw"></i>
+            </button>
+        </div>
+        <div id="tp-weather-widget"></div>
+    </body>
 </html>

@@ -4,7 +4,11 @@ import { normalize } from "path";
 import { lte as verLte } from "semver";
 
 // find a executable file for current platform and arch
-export function findExecutable(baseDir: string, fileName: string, findMacOSMajor: boolean) {
+export function findExecutable(
+    baseDir: string,
+    fileName: string,
+    findMacOSMajor: boolean
+) {
     // executable path
     let executable: string;
     // get macOS major version
@@ -25,9 +29,14 @@ export function findExecutable(baseDir: string, fileName: string, findMacOSMajor
             else return false;
         executable = normalize(path + "/" + fileName + ext);
         return existsSync(executable);
-    }
+    };
     if (!setExecutablePath(process.arch))
         if (!setExecutablePath("ia32"))
-            throw new Error("No executable available for this platform or this arch, you're in " + process.platform + " " + process.arch);
+            throw new Error(
+                "No executable available for this platform or this arch, you're in " +
+                    process.platform +
+                    " " +
+                    process.arch
+            );
     return executable;
 }

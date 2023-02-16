@@ -9,7 +9,9 @@ const dir = getDir(electron);
 // nodejs executable file path
 const executable = findExecutable(dir.asarDirname + "/wrapper", "node", true);
 // wrapper.js file path
-const wrapperFile = normalize(dir.asarDirname + "/wrapper/" + process.platform + "/" + process.arch + "/wrapper.js");
+const wrapperFile = normalize(
+    dir.asarDirname + "/wrapper/" + process.platform + "/" + process.arch + "/wrapper.js"
+);
 
 export async function runWrapper(script: string) {
     return await new Promise<string>((resolve, reject) => {

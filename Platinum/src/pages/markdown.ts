@@ -17,7 +17,9 @@ export function create(file: string, internal: boolean = false) {
         emoji: true,
         strikethrough: true,
     });
-    let content = readFileSync((internal) ? (resolve(__dirname + "/../../markdown/" + file + ".md")) : (file)).toString();
+    let content = readFileSync(
+        internal ? resolve(__dirname + "/../../markdown/" + file + ".md") : file
+    ).toString();
     if (content.indexOf("!VAR_PKG_USED!") != -1) {
         let pkgList: Array<string> = [];
         for (const dep in pkg.dependencies) {
@@ -30,7 +32,12 @@ export function create(file: string, internal: boolean = false) {
         content = content.replace("!VAR_PKG_USED!", pkgList.join("\n"));
     }
     if (content.indexOf("!VAR_PKG_CHROMIUM!") != -1) {
-        content = content.replace("!VAR_PKG_CHROMIUM!", "file://" + dirname(remote.app.getPath("exe")).replace(/\\/, "/") + "/LICENSES.chromium.html");
+        content = content.replace(
+            "!VAR_PKG_CHROMIUM!",
+            "file://" +
+                dirname(remote.app.getPath("exe")).replace(/\\/, "/") +
+                "/LICENSES.chromium.html"
+        );
     }
     let html = converter.makeHtml(content);
 

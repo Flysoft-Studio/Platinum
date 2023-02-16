@@ -1,5 +1,20 @@
-import { genIcon, getImageData, getImageMIME, imageDataToBase64, resizeImage } from "../common/image";
-import { ensureDirSync, existsSync, mkdirSync, moveSync, readFileSync, removeSync, rmSync, writeFileSync } from "fs-extra";
+import {
+    genIcon,
+    getImageData,
+    getImageMIME,
+    imageDataToBase64,
+    resizeImage,
+} from "../common/image";
+import {
+    ensureDirSync,
+    existsSync,
+    mkdirSync,
+    moveSync,
+    readFileSync,
+    removeSync,
+    rmSync,
+    writeFileSync,
+} from "fs-extra";
 import { app, shell } from "electron";
 import { extname, normalize } from "path";
 import { randomUUID } from "crypto";
@@ -17,9 +32,17 @@ export function init(user: string) {
     userDir = getUserFolder(user);
     logDir = getUserLogFolder(user);
     dataDir = getUserDataFolder(user);
-    global.user = user, global.usersDir = usersDir, global.mgrDir = mgrDir, global.mgrDataDir = mgrDataDir, global.usersListFile = usersListFile, global.userDir = userDir, global.logDir = logDir, global.dataDir = dataDir;
+    (global.user = user),
+        (global.usersDir = usersDir),
+        (global.mgrDir = mgrDir),
+        (global.mgrDataDir = mgrDataDir),
+        (global.usersListFile = usersListFile),
+        (global.userDir = userDir),
+        (global.logDir = logDir),
+        (global.dataDir = dataDir);
 
-    ensureDirSync(usersDir); ensureDirSync(mgrDir);
+    ensureDirSync(usersDir);
+    ensureDirSync(mgrDir);
 
     if (!existsSync(userDir)) {
         mkdirSync(userDir);
@@ -33,36 +56,61 @@ export function init(user: string) {
         }
     }
 
-    ensureDirSync(userDir); ensureDirSync(logDir); ensureDirSync(dataDir);
+    ensureDirSync(userDir);
+    ensureDirSync(logDir);
+    ensureDirSync(dataDir);
 
     app.setPath("userData", userDir);
     app.setAppLogsPath(logDir);
 
     if (!existsSync(usersListFile))
-        writeFileSync(usersListFile, JSON.stringify({
-            "default": {
-                id: "default",
-            },
-        } as Browser.UserInfoList));
+        writeFileSync(
+            usersListFile,
+            JSON.stringify({
+                default: {
+                    id: "default",
+                },
+            } as Browser.UserInfoList)
+        );
 }
 
 export async function generateLink(user: Browser.UserInfo) {
     if (user.id == "default" || process.platform != "win32") return;
     deleteLink(user);
 
-    let userFilePath = normalize((user.icon) ? (getUserDataFolder(user.id) + "/" + user.icon) : (__dirname + "/../../img/user/user.svg"));
-    let userFileData = await resizeImage((await getImageData(userFilePath, getImageMIME(userFilePath), true)).data, 256, 256);
+    let userFilePath = normalize(
+        user.icon
+            ? getUserDataFolder(user.id) + "/" + user.icon
+            : __dirname + "/../../img/user/user.svg"
+    );
+    let userFileData = await resizeImage(
+        (
+            await getImageData(userFilePath, getImageMIME(userFilePath), true)
+        ).data,
+        256,
+        256
+    );
     let userFileBase64 = imageDataToBase64(userFileData.data, userFileData.mime);
 
     let logoFilePath = normalize(__dirname + "/../../platinum.svg");
-    let logoFileData = await resizeImage((await getImageData(logoFilePath, getImageMIME(logoFilePath), true)).data, 256, 256);
+    let logoFileData = await resizeImage(
+        (
+            await getImageData(logoFilePath, getImageMIME(logoFilePath), true)
+        ).data,
+        256,
+        256
+    );
     let logoFileBase64 = imageDataToBase64(logoFileData.data, logoFileData.mime);
 
-    let desktopIconFileSVGContent = readFileSync(__dirname + "/../../img/user/desktop.svg")
+    let desktopIconFileSVGContent = readFileSync(
+        __dirname + "/../../img/user/desktop.svg"
+    )
         .toString()
         .replace("!<PlatinumIcon>!", logoFileBase64)
         .replace("!<ProfileIcon>!", userFileBase64);
-    let desktopIconFileICONPath = normalize(getUserDataFolder(user.id) + "/desktopIcon_" + randomUUID() + ".ico");
+    let desktopIconFileICONPath = normalize(
+        getUserDataFolder(user.id) + "/desktopIcon_" + randomUUID() + ".ico"
+    );
     genIcon(Buffer.from(desktopIconFileSVGContent), desktopIconFileICONPath);
 
     shell.writeShortcutLink(getLinkFile(user), "create", {
@@ -70,7 +118,9 @@ export async function generateLink(user: Browser.UserInfo) {
         icon: desktopIconFileICONPath,
         iconIndex: 0,
         target: app.getPath("exe"),
-        args: ((app.isPackaged) ? ([]) : ([process.cwd()])).concat(["--user=" + user.id]).join(" "),
+        args: (app.isPackaged ? [] : [process.cwd()])
+            .concat(["--user=" + user.id])
+            .join(" "),
     });
 }
 
@@ -81,10 +131,14 @@ export function deleteLink(user: Browser.UserInfo) {
         // delete the icon file
         try {
             let desktopLinkInfo = shell.readShortcutLink(desktopLinkFile);
-            if (desktopLinkInfo.icon && extname(desktopLinkInfo.icon) == ".ico" && existsSync(desktopLinkInfo.icon)) {
+            if (
+                desktopLinkInfo.icon &&
+                extname(desktopLinkInfo.icon) == ".ico" &&
+                existsSync(desktopLinkInfo.icon)
+            ) {
                 rmSync(desktopLinkInfo.icon);
             }
-        } catch { }
+        } catch {}
         // delete the link itself
         try {
             rmSync(desktopLinkFile);
@@ -96,7 +150,28 @@ export function deleteLink(user: Browser.UserInfo) {
 
 export function getLinkFile(user: Browser.UserInfo) {
     if (user.id == "default" || process.platform != "win32") return;
-    return normalize(app.getPath("desktop") + "/" + ((user.name) ? ([user.name.replace(/\n/g, " ").replace(/</g, " ").replace(/>/g, " ").replace(/\?/g, " ").replace(/\*/g, " ").replace(/\\/g, " ").replace(/\//g, " ").replace(/:/g, " ").replace(/\|/g, " ")]) : ([])).concat(["Platinum"]).join(" - ") + ".lnk");
+    return normalize(
+        app.getPath("desktop") +
+            "/" +
+            (user.name
+                ? [
+                      user.name
+                          .replace(/\n/g, " ")
+                          .replace(/</g, " ")
+                          .replace(/>/g, " ")
+                          .replace(/\?/g, " ")
+                          .replace(/\*/g, " ")
+                          .replace(/\\/g, " ")
+                          .replace(/\//g, " ")
+                          .replace(/:/g, " ")
+                          .replace(/\|/g, " "),
+                  ]
+                : []
+            )
+                .concat(["Platinum"])
+                .join(" - ") +
+            ".lnk"
+    );
 }
 
 export function getUserFolder(user: string) {

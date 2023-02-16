@@ -10,7 +10,9 @@ export function whatsnewAction() {
 
 ipcRenderer.on("lang", (event, language: string) => {
     lang.reload(language);
-    (<HTMLElement>document.querySelector("#update_version")).innerHTML = lang.encode(lang.get("ups_body", [pkg.version]));
+    (<HTMLElement>document.querySelector("#update_version")).innerHTML = lang.encode(
+        lang.get("ups_body", [pkg.version])
+    );
 });
 
 ipcRenderer.on("load", (event) => {

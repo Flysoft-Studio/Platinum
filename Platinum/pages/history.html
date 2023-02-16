@@ -1,75 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light dark" />
+        <title class="text">{his_title}</title>
+        <script src="../libs/fontawesome.pro.js"></script>
+        <script>
+            let js = require("../build/pages/history.js");
+        </script>
+        <link rel="stylesheet" href="../css/common.css" />
+        <link rel="stylesheet" href="../css/sidebar.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <title class="text">{his_title}</title>
-    <script src="../libs/fontawesome.pro.js"></script>
-    <script>
-        let js = require("../build/pages/history.js");
-    </script>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/sidebar.css">
-</head>
-
-<body>
-    <div id="app">
-        <div id="sidebar">
-            <h1 id="sidebar_title" class="text">{his_title}</h1>
-            <div id="sidebar_items" role="tablist">
-                <div class="sidebar_item" id="sidebar_all">
-                    <div><i class="fal fa-border-all fa-fw"></i></div>
-                    <div class="text">{his_all}</div>
-                    <input class="ripple" type="radio" name="sidebar" data-tab="all" role="tab">
+    <body>
+        <div id="app">
+            <div id="sidebar">
+                <h1 id="sidebar_title" class="text">{his_title}</h1>
+                <div id="sidebar_items" role="tablist">
+                    <div class="sidebar_item" id="sidebar_all">
+                        <div><i class="fal fa-border-all fa-fw"></i></div>
+                        <div class="text">{his_all}</div>
+                        <input
+                            class="ripple"
+                            type="radio"
+                            name="sidebar"
+                            data-tab="all"
+                            role="tab"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div id="sidebar_open">
+                <input type="checkbox" />
+                <i class="far fa-bars fa-fw"></i>
+            </div>
+            <div class="fdialog" id="history_removemulti">
+                <div id="history_removemulti_title" class="fdialog_title text">
+                    {his_removemulti_title}
+                </div>
+                <div class="fdialog_btns">
+                    <button
+                        id="history_removemulti_remove"
+                        class="button ripple text"
+                        onclick="js.removeMultiRemove();"
+                    >
+                        {com_remove}
+                    </button>
+                    <button
+                        id="history_removemulti_cancel"
+                        class="button ripple button_normal text"
+                        onclick="js.removeMultiCancel();"
+                    >
+                        {com_cancel}
+                    </button>
+                </div>
+            </div>
+            <div id="tabs">
+                <div class="tab" id="tab_all">
+                    <h2 class="tab_title text">{his_title}</h2>
+                    <div class="tab_body">
+                        <ul class="list" id="history_list">
+                            <li
+                                class="list_item history_item template"
+                                role="presentation"
+                            >
+                                <div class="checkbox">
+                                    <input type="checkbox" class="history_checkbox" />
+                                    <div></div>
+                                </div>
+                                <img
+                                    alt="Site Icon"
+                                    class="list_icon history_icon"
+                                    aria-hidden="true"
+                                />
+                                <div class="list_title">
+                                    <a
+                                        class="list_title_text history_title text link link_white"
+                                        href="about:blank"
+                                        target="_blank"
+                                    ></a>
+                                </div>
+                                <div class="list_other">
+                                    <span
+                                        class="list_other_text list_other_text_primary text history_site"
+                                    ></span>
+                                    <span
+                                        class="list_other_text text history_time"
+                                    ></span>
+                                </div>
+                                <div class="list_btns">
+                                    <button
+                                        class="history_btn_delete stitle"
+                                        title="{com_remove}"
+                                    >
+                                        <i class="fal fa-xmark fa-fw"></i>
+                                    </button>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-        <div id="sidebar_open">
-            <input type="checkbox"></input>
-            <i class="far fa-bars fa-fw"></i>
-        </div>
-        <div class="fdialog" id="history_removemulti">
-            <div id="history_removemulti_title" class="fdialog_title text">{his_removemulti_title}</div>
-            <div class="fdialog_btns">
-                <button id="history_removemulti_remove" class="button ripple text"
-                    onclick="js.removeMultiRemove();">{com_remove}</button>
-                <button id="history_removemulti_cancel" class="button ripple button_normal text"
-                    onclick="js.removeMultiCancel();">{com_cancel}</button>
-            </div>
-        </div>
-        <div id="tabs">
-            <div class="tab" id="tab_all">
-                <h2 class="tab_title text">{his_title}</h2>
-                <div class="tab_body">
-                    <ul class="list" id="history_list">
-                        <li class="list_item history_item template" role="presentation">
-                            <div class="checkbox">
-                                <input type="checkbox" class="history_checkbox">
-                                <div></div>
-                            </div>
-                            <img alt="Site Icon" class="list_icon history_icon" aria-hidden="true">
-                            <div class="list_title">
-                                <a class="list_title_text history_title text link link_white" href="about:blank"
-                                    target="_blank"></a>
-                            </div>
-                            <div class="list_other">
-                                <span class="list_other_text list_other_text_primary text history_site"></span>
-                                <span class="list_other_text text history_time"></span>
-                            </div>
-                            <div class="list_btns">
-                                <button class="history_btn_delete stitle" title="{com_remove}">
-                                    <i class="fal fa-xmark fa-fw"></i>
-                                </button>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-
+    </body>
 </html>

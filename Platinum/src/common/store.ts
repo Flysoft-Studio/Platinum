@@ -13,16 +13,19 @@ export class Store extends EventEmitter {
     constructor(file: string, defaultData: Object, eventName: string) {
         super();
         super.setMaxListeners(0);
-        this.file = file, this.default = defaultData, this.eventName = eventName;
+        (this.file = file), (this.default = defaultData), (this.eventName = eventName);
         this.reload();
         if (!existsSync(this.file)) this.write();
-        ((isMain) ? (ipcMain) : (ipcRenderer)).on(this.eventName, (event, noReload: boolean) => {
-            this.reload();
-            super.emit("change-internal-notify");
-            super.emit("write");
-            if (!noReload) super.emit("change");
-            if (isMain) super.emit("send-broadcast", noReload);
-        });
+        (isMain ? ipcMain : ipcRenderer).on(
+            this.eventName,
+            (event, noReload: boolean) => {
+                this.reload();
+                super.emit("change-internal-notify");
+                super.emit("write");
+                if (!noReload) super.emit("change");
+                if (isMain) super.emit("send-broadcast", noReload);
+            }
+        );
     }
 
     public write(noReload: boolean = false) {
@@ -51,7 +54,7 @@ export class Store extends EventEmitter {
 
     public get(key: string, readDefault: boolean = false) {
         let path = key.split(".");
-        let obj = (readDefault) ? (this.default) : (this.data);
+        let obj = readDefault ? this.default : this.data;
         for (let i = 0; i < path.length; i++) {
             obj = obj[path[i]];
             // obj not exist and now it is last value
@@ -67,8 +70,7 @@ export class Store extends EventEmitter {
         let path = key.split(".");
         let obj = this.data;
         for (let i = 0; i < path.length; i++) {
-            if (obj[path[i]] == undefined)
-                if (i + 1 != path.length) obj[path[i]] = {};
+            if (obj[path[i]] == undefined) if (i + 1 != path.length) obj[path[i]] = {};
             if (i + 1 == path.length) obj[path[i]] = value;
 
             obj = obj[path[i]];

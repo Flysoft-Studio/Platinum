@@ -125,7 +125,7 @@ declare global {
             errorCode: string;
             errorMessage: string;
             dir: string;
-            files: Array<File>
+            files: Array<File>;
         }
         interface File {
             index: string;
@@ -164,7 +164,11 @@ declare global {
             id: string;
             data: DataPackageIData;
         }
-        type DataPackageIData = DataPackageIBase | DataPackageIBoardcast | DataPackageIOpen | DataPackageIActive;
+        type DataPackageIData =
+            | DataPackageIBase
+            | DataPackageIBoardcast
+            | DataPackageIOpen
+            | DataPackageIActive;
         interface DataPackageIBase {
             user: string;
         }
@@ -184,13 +188,14 @@ declare global {
             data: DataPackageData;
         }
         type DataPackageData = DataPackageBase | DataPackageOpen;
-        interface DataPackageBase { }
-        interface DataPackageUpdate extends Browser.UpdateStatus { }
-        interface DataPackageOpen extends Browser.BrowserOptions { }
+        interface DataPackageBase {}
+        interface DataPackageUpdate extends Browser.UpdateStatus {}
+        interface DataPackageOpen extends Browser.BrowserOptions {}
 
         interface User {
             process: ChildProcessWithoutNullStreams;
             socket: WebSocket;
+            options: LaunchOptions;
             onready: Function;
             onexit: Function;
             onrefuseexit: Function;

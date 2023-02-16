@@ -27,7 +27,12 @@
     --toparea-height: calc(var(--toparea-no-favbar-height) + var(--fav-height));
     --toparea-no-favbar-height: calc(var(--title-height) + var(--nav-height));
     --color-cl: transparent;
-    --color-img: linear-gradient(to right, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 70%, transparent 100%);
+    --color-img: linear-gradient(
+        to right,
+        rgb(0, 0, 0) 0%,
+        rgb(0, 0, 0) 70%,
+        transparent 100%
+    );
     --hover-color-cl: var(--color-cl);
     --hover-color-img: var(--color-img);
     --tab-background: rgba(255, 255, 255, 0.4);
@@ -171,7 +176,11 @@ body {
         top: 0;
         right: 0;
         bottom: 0;
-        -webkit-mask-image: linear-gradient(var(--border-degree), rgba(255, 255, 255, 1), transparent);
+        -webkit-mask-image: linear-gradient(
+            var(--border-degree),
+            rgba(255, 255, 255, 1),
+            transparent
+        );
         mask-image: unset;
         border: var(--ripple-border) 2px solid;
         border-radius: inherit;
@@ -187,7 +196,8 @@ body {
     .spotlight .ripple_active::before {
         opacity: 1;
         --ripple-diameter: 1000px;
-        transition: left 1s var(--cubic-bezier), top 1s var(--cubic-bezier), width 1s var(--cubic-bezier), height 1s var(--cubic-bezier);
+        transition: left 1s var(--cubic-bezier), top 1s var(--cubic-bezier),
+            width 1s var(--cubic-bezier), height 1s var(--cubic-bezier);
     }
 
     .spotlight .ripple_hover::before {
@@ -258,7 +268,7 @@ body {
     background-color: var(--menu-background-opaque);
 }
 
-.menu>div {
+.menu > div {
     padding: 2px 0;
     gap: 2px;
     display: flex;
@@ -282,10 +292,11 @@ body {
     max-width: 400px;
     min-width: 200px;
     font-size: 14px;
-    transition: background-color 0.05s var(--cubic-bezier), color 0.05s var(--cubic-bezier);
+    transition: background-color 0.05s var(--cubic-bezier),
+        color 0.05s var(--cubic-bezier);
 }
 
-.menu_item:not(.menu_item_advanced)>* {
+.menu_item:not(.menu_item_advanced) > * {
     pointer-events: none;
 }
 
@@ -305,7 +316,7 @@ body {
     justify-content: center;
 }
 
-.menu_item:not(.menu_item_advanced)>.text {
+.menu_item:not(.menu_item_advanced) > .text {
     text-align: left;
     color: inherit;
     font-size: inherit;
@@ -320,7 +331,7 @@ body {
     align-items: flex-start;
 }
 
-.menu_item_wrap:not(.menu_item_advanced)>.text {
+.menu_item_wrap:not(.menu_item_advanced) > .text {
     white-space: normal;
     word-break: break-word;
 }
@@ -417,7 +428,7 @@ body {
     flex: 1;
 }
 
-.list_btns>button {
+.list_btns > button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -431,12 +442,12 @@ body {
     border-radius: 3px;
 }
 
-.list_btns>button:hover {
+.list_btns > button:hover {
     color: var(--button-hover-color);
     background-color: var(--button-hover);
 }
 
-.list_btns>button:focus-visible {
+.list_btns > button:focus-visible {
     box-shadow: 0 0 0 1px var(--focus-color);
 }
 
@@ -454,7 +465,7 @@ body {
     gap: 10px;
 }
 
-.option_group_item>input {
+.option_group_item > input {
     position: absolute;
     appearance: none;
     width: 20px;
@@ -465,7 +476,7 @@ body {
     border: transparent 1px solid;
 }
 
-.option_group_item>div {
+.option_group_item > div {
     flex-shrink: 0;
     width: 20px;
     height: 20px;
@@ -474,17 +485,17 @@ body {
     border: var(--checkbox-border) 1px solid;
 }
 
-.option_group_item>input:hover~div {
+.option_group_item > input:hover ~ div {
     background-color: var(--checkbox-hover-background);
 }
 
-.option_group_item>input:checked~div {
+.option_group_item > input:checked ~ div {
     position: relative;
     background-color: var(--theme-color);
     border: var(--theme-color) 1px solid;
 }
 
-.option_group_item>input:checked~div::after {
+.option_group_item > input:checked ~ div::after {
     content: "";
     position: absolute;
     top: 5px;
@@ -496,11 +507,11 @@ body {
     background-color: var(--checkbox-open-dot-background);
 }
 
-.option_group_item>span {
+.option_group_item > span {
     display: none;
 }
 
-.option_group_item>input:checked~span {
+.option_group_item > input:checked ~ span {
     display: block;
 }
 
@@ -524,7 +535,7 @@ body {
     background-color: var(--radio-group-item-hover-background);
 }
 
-.radio_group_item>input {
+.radio_group_item > input {
     border-radius: inherit;
     appearance: none;
     outline: none;
@@ -534,11 +545,11 @@ body {
     transition: box-shadow 0.1s var(--cubic-bezier);
 }
 
-.radio_group_item>input:checked {
+.radio_group_item > input:checked {
     box-shadow: inset 0 0 0 3px var(--theme-color);
 }
 
-.radio_group_item>div {
+.radio_group_item > div {
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -548,13 +559,13 @@ body {
     border-radius: inherit;
 }
 
-.radio_group_item>div>label {
+.radio_group_item > div > label {
     color: var(--button-color);
     font-size: 14px;
     transition: color 0.2s var(--cubic-bezier);
 }
 
-.radio_group_item:hover>div>label {
+.radio_group_item:hover > div > label {
     color: var(--radio-group-item-hover-color);
 }
 
@@ -577,7 +588,7 @@ body {
     overflow: hidden;
 }
 
-.checkbox>input {
+.checkbox > input {
     width: 40px;
     height: 20px;
     appearance: none;
@@ -587,16 +598,16 @@ body {
     outline: none;
 }
 
-.checkbox>input:hover {
+.checkbox > input:hover {
     background-color: var(--checkbox-hover-background);
 }
 
-.checkbox>input:checked {
+.checkbox > input:checked {
     background-color: var(--theme-color);
     border: var(--theme-color) 1px solid;
 }
 
-.checkbox>div {
+.checkbox > div {
     position: absolute;
     transition: left 0.1s var(--cubic-bezier), background-color 0.1s var(--cubic-bezier);
     pointer-events: none;
@@ -608,7 +619,7 @@ body {
     background-color: var(--checkbox-close-dot-background);
 }
 
-.checkbox>input:checked~div {
+.checkbox > input:checked ~ div {
     left: 25px;
     background-color: var(--checkbox-open-dot-background) !important;
 }
@@ -638,7 +649,7 @@ body {
     border-radius: 3px;
 }
 
-.button>* {
+.button > * {
     pointer-events: none;
 }
 
@@ -654,8 +665,8 @@ body {
 
 .color:focus-visible,
 .button:focus-visible,
-.checkbox>input:focus-visible,
-.option_group_item>input:focus-visible {
+.checkbox > input:focus-visible,
+.option_group_item > input:focus-visible {
     border: var(--focus-color) 2px solid;
 }
 
@@ -670,7 +681,7 @@ body {
     color: rgb(0, 123, 255);
 }
 
-.user_tips_syncing>*:nth-child(1) {
+.user_tips_syncing > *:nth-child(1) {
     animation: rotate 1s linear infinite;
 }
 
@@ -696,7 +707,7 @@ body {
     color: var(--text-sub-color);
 }
 
-.user_tips>* {
+.user_tips > * {
     color: inherit;
     white-space: nowrap;
 }
@@ -800,14 +811,12 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-
     *,
     *::before,
     *::after {
         --nav-user-background: rgba(255, 255, 255, 0.3);
         --color-img: linear-gradient(to right, #fff 0%, #fff 70%, transparent 100%);
         --tab-background: rgba(255, 255, 255, 0.15);
-        ;
         --tab-hover: rgba(255, 255, 255, 0.05);
         --light-border: rgba(255, 255, 255, 0.2);
         --app-background: rgba(56, 56, 56, 0.9);
@@ -850,7 +859,6 @@ body {
 }
 
 @media (forced-colors: active) {
-
     *,
     *::before,
     *::after {

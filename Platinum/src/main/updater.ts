@@ -31,7 +31,8 @@ export class Updater extends EventEmitter {
         this.updateStatus.available = false;
         this.updateStatus.canUpdate = true;
         this.channel = channel;
-        if (process.platform == "win32") this.updateStatus.canUpdate = !process.windowsStore;
+        if (process.platform == "win32")
+            this.updateStatus.canUpdate = !process.windowsStore;
 
         app.on("will-quit", (event) => {
             if (this.updateStatus.canUpdate && process.platform == "win32") {
@@ -39,7 +40,7 @@ export class Updater extends EventEmitter {
                     event.preventDefault();
                 } else if (this.updateStatus.status == "waitinstall") {
                     log.warn("Update: Will start update");
-                    spawnSync("start", ["\"\" \"" + this.tempFile + "\" /S"], {
+                    spawnSync("start", ['"" "' + this.tempFile + '" /S'], {
                         windowsHide: true,
                         shell: true,
                     });
@@ -99,7 +100,7 @@ export class Updater extends EventEmitter {
             this.updateStatus.installing = false;
             this.updateStatus.status = "error";
             super.emit("update-status");
-        }
+        };
         // don't send msg too frequently, it may cause the window to be not responding
         let eventTimer: NodeJS.Timeout;
         let ret = await new Promise((resolve, reject) => {
@@ -119,14 +120,18 @@ export class Updater extends EventEmitter {
                 return;
             }
             if (process.platform != "linux") {
-                this.tempFile = normalize(this.tempPath + "/platinum.update.{" + randomUUID() + "}." + ext);
+                this.tempFile = normalize(
+                    this.tempPath + "/platinum.update.{" + randomUUID() + "}." + ext
+                );
             } else {
                 let file = dialog.showSaveDialogSync(null, {
                     title: "Save update file to",
-                    filters: [{
-                        extensions: [ext],
-                        name: "AppImage",
-                    }],
+                    filters: [
+                        {
+                            extensions: [ext],
+                            name: "AppImage",
+                        },
+                    ],
                 });
                 if (!file) return;
                 this.tempFile = file;
@@ -142,7 +147,12 @@ export class Updater extends EventEmitter {
                     if (this.updateStatus.update.hash == md5) {
                         log.log("Update: MD5 match: " + md5);
                     } else {
-                        error("MD5 mismatch, downloaded: " + md5 + " server: " + this.updateStatus.update.hash);
+                        error(
+                            "MD5 mismatch, downloaded: " +
+                                md5 +
+                                " server: " +
+                                this.updateStatus.update.hash
+                        );
                         resolve(-2);
                         return;
                     }
@@ -151,44 +161,51 @@ export class Updater extends EventEmitter {
                 return;
             });
 
-            getProviderURL(this.updateStatus.update).then((url) => {
-                log.log("Update: Got provider url, url: " + url);
-                fetch(url, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/octet-stream" },
-                }).then((res) => {
-                    const size = res.headers.get("Content-Length");
-                    const progressStream = progress_stream({
-                        length: size,
-                        time: 1000,
-                    });
-                    const hash = createHash("md5");
-                    progressStream.on("progress", (data) => {
-                        if (!eventTimer) eventTimer = setTimeout(() => {
-                            eventTimer = null;
-                            let percentage = Math.round(data.percentage);
-                            log.log("Update: Downloaded: " + percentage + "%");
-                            this.updateStatus.progress = percentage;
-                            super.emit("update-status");
-                        }, 3000);
-                    });
-                    res.body.pipe(progressStream).pipe(fileStream);
-                    res.body.on("data", (chunk) => {
-                        hash.update(chunk);
-                    });
-                    res.body.on("end", () => {
-                        md5 = hash.digest("hex");
-                    });
-                }).catch((reason) => {
+            getProviderURL(this.updateStatus.update)
+                .then((url) => {
+                    log.log("Update: Got provider url, url: " + url);
+                    fetch(url, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/octet-stream" },
+                    })
+                        .then((res) => {
+                            const size = res.headers.get("Content-Length");
+                            const progressStream = progress_stream({
+                                length: size,
+                                time: 1000,
+                            });
+                            const hash = createHash("md5");
+                            progressStream.on("progress", (data) => {
+                                if (!eventTimer)
+                                    eventTimer = setTimeout(() => {
+                                        eventTimer = null;
+                                        let percentage = Math.round(data.percentage);
+                                        log.log(
+                                            "Update: Downloaded: " + percentage + "%"
+                                        );
+                                        this.updateStatus.progress = percentage;
+                                        super.emit("update-status");
+                                    }, 3000);
+                            });
+                            res.body.pipe(progressStream).pipe(fileStream);
+                            res.body.on("data", (chunk) => {
+                                hash.update(chunk);
+                            });
+                            res.body.on("end", () => {
+                                md5 = hash.digest("hex");
+                            });
+                        })
+                        .catch((reason) => {
+                            error(reason);
+                            resolve(-3);
+                            return;
+                        });
+                })
+                .catch((reason) => {
                     error(reason);
-                    resolve(-3);
+                    resolve(-4);
                     return;
                 });
-            }).catch((reason) => {
-                error(reason);
-                resolve(-4);
-                return;
-            });
         });
         if (eventTimer) clearTimeout(eventTimer);
         this.updateStatus.progress = 100;
@@ -211,8 +228,17 @@ export class Updater extends EventEmitter {
                 break;
         }
     }
-    public async checkForUpdates(channel: string = "latest", calledByLatest: boolean = false) {
-        if (!this.updateStatus.canUpdate || (this.updateStatus.status != "error" && this.updateStatus.status != "idle" && !calledByLatest)) return;
+    public async checkForUpdates(
+        channel: string = "latest",
+        calledByLatest: boolean = false
+    ) {
+        if (
+            !this.updateStatus.canUpdate ||
+            (this.updateStatus.status != "error" &&
+                this.updateStatus.status != "idle" &&
+                !calledByLatest)
+        )
+            return;
         log.log("Update: Checking for updates, channel: " + channel);
         if (!calledByLatest) {
             this.updateStatus.status = "checking";
@@ -222,17 +248,44 @@ export class Updater extends EventEmitter {
             let arch = "x64";
             if (process.arch == "ia32") arch = "ia32";
             if (process.platform == "win32") arch = "all";
-            let updateInfo = (await (await fetch("http://api.flysoftapp.com/update/platinum/" + channel + "_" + process.platform + "_" + arch + ".json")).json()) as Browser.UpdateInfo;
+            let updateInfo = (await (
+                await fetch(
+                    "http://api.flysoftapp.com/update/platinum/" +
+                        channel +
+                        "_" +
+                        process.platform +
+                        "_" +
+                        arch +
+                        ".json"
+                )
+            ).json()) as Browser.UpdateInfo;
             let versionInfo = this.parseVersionInfo(updateInfo.version);
             if (!versionInfo) throw new Error("Invalid version info");
-            if (/* check major minor patch preview (current and lower channel) */
-                (((versionInfo.major > this.curVersionInfo.major) || (versionInfo.major >= this.curVersionInfo.major && versionInfo.minor > this.curVersionInfo.minor) || (versionInfo.major >= this.curVersionInfo.major && versionInfo.minor >= this.curVersionInfo.minor && this.curVersionInfo.patch > this.curVersionInfo.patch) || (versionInfo.major >= this.curVersionInfo.major && versionInfo.minor >= this.curVersionInfo.minor && this.curVersionInfo.patch >= this.curVersionInfo.patch && versionInfo.preview > this.curVersionInfo.preview)) && this.channelToNumber(versionInfo.channel) <= this.channelToNumber(this.channel))) {
+            if (
+                /* check major minor patch preview (current and lower channel) */
+                (versionInfo.major > this.curVersionInfo.major ||
+                    (versionInfo.major >= this.curVersionInfo.major &&
+                        versionInfo.minor > this.curVersionInfo.minor) ||
+                    (versionInfo.major >= this.curVersionInfo.major &&
+                        versionInfo.minor >= this.curVersionInfo.minor &&
+                        this.curVersionInfo.patch > this.curVersionInfo.patch) ||
+                    (versionInfo.major >= this.curVersionInfo.major &&
+                        versionInfo.minor >= this.curVersionInfo.minor &&
+                        this.curVersionInfo.patch >= this.curVersionInfo.patch &&
+                        versionInfo.preview > this.curVersionInfo.preview)) &&
+                this.channelToNumber(versionInfo.channel) <=
+                    this.channelToNumber(this.channel)
+            ) {
                 this.updateStatus.update = updateInfo;
                 this.updateStatus.version = versionInfo;
                 this.updateStatus.available = true;
                 log.log("Update: Update available, version: " + updateInfo.version);
                 super.emit("update-available");
-            } else if (this.channel != "latest" && channel == "latest" && !calledByLatest) {
+            } else if (
+                this.channel != "latest" &&
+                channel == "latest" &&
+                !calledByLatest
+            ) {
                 // if there are no latest updates available, it will check preview updates
                 await this.checkForUpdates("preview", true);
             }

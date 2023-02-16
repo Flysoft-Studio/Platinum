@@ -40,9 +40,13 @@ export class Dialog {
         document.body.classList.remove("show_dialog");
         this.dialog.classList.remove("dialog_show");
         this.dialog.classList.add("dialog_hide");
-        setTimeout(() => requestAnimationFrame(() => {
-            this.dialog.classList.remove("dialog_hide");
-        }), 100);
+        setTimeout(
+            () =>
+                requestAnimationFrame(() => {
+                    this.dialog.classList.remove("dialog_hide");
+                }),
+            100
+        );
         this.dialog.blur();
         com.showTabbar();
     }
@@ -50,6 +54,9 @@ export class Dialog {
 
 function useBackDrop() {
     let isBlur = com.store.get("appearance.visual.blur") as boolean;
-    let useBackDrop = com.store.get("appearance.visual.usebackdrop") as boolean && isBlur && isBackdropSupported;
+    let useBackDrop =
+        (com.store.get("appearance.visual.usebackdrop") as boolean) &&
+        isBlur &&
+        isBackdropSupported;
     return useBackDrop;
 }

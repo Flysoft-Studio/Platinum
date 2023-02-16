@@ -2,44 +2,44 @@
     padding: 100px;
 }
 
-#markdown>* {
+#markdown > * {
     color: var(--text-color);
     line-height: 30px;
     font-size: 16px;
     transition: opacity 0.1s var(--cubic-bezier);
 }
 
-#markdown>*:hover {
+#markdown > *:hover {
     opacity: 0.8;
 }
 
-#markdown>h1 {
+#markdown > h1 {
     margin: 50px 0;
     font-size: 60px;
     font-weight: 400;
     line-height: 80px;
 }
 
-#markdown>h2 {
+#markdown > h2 {
     margin: 20px 0;
     font-size: 35px;
     font-weight: 400;
     line-height: 46px;
 }
 
-#markdown>h3 {
+#markdown > h3 {
     margin: 15px 0;
     font-size: 25px;
     font-weight: 400;
     line-height: 34px;
 }
 
-#markdown>h4 {
+#markdown > h4 {
     margin: 10px 0;
     font-size: 20px;
     font-weight: 400;
 }
 
-#markdown>ul {
+#markdown > ul {
     margin: 0px 20px;
 }

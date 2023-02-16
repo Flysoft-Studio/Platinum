@@ -80,7 +80,11 @@ function verifySecret(secret) {
             }
         }`);
 
-        if (document.querySelector("body>.line-gutter-backdrop") && document.querySelector("body>form") && document.querySelector("body>table")) {
+        if (
+            document.querySelector("body>.line-gutter-backdrop") &&
+            document.querySelector("body>form") &&
+            document.querySelector("body>table")
+        ) {
             // viewSource.css
             addStyleSheet(`body>table>tbody {
                 position: fixed;
@@ -117,8 +121,8 @@ function verifySecret(secret) {
                 display: none;
             }`);
         }
-    }
-}
+    },
+};
 
 function addStyleSheet(css: string) {
     if (!document.head) return;
@@ -147,7 +151,7 @@ window.addEventListener("DOMContentLoaded", () => {
             let zoomWidth = (targetMaxWidth - rect.width) / rect.width;
             let zoomHeight = (targetMaxHeight - rect.height) / rect.height;
             // get min zoom
-            zoom = (zoomWidth > zoomHeight) ? (zoomHeight) : (zoomWidth);
+            zoom = zoomWidth > zoomHeight ? zoomHeight : zoomWidth;
         }
         (svg.style as any).zoom = zoom.toString();
     }

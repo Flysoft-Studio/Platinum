@@ -33,7 +33,7 @@ import {
 import { create as createLogger } from "electron-log";
 import { ElectronBlocker } from "@cliqz/adblocker-electron";
 import { JSONRPCClient } from "json-rpc-2.0";
-import { basename, dirname, extname, normalize } from "path";
+import { basename, dirname, extname, join, normalize, resolve } from "path";
 import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs-extra";
 import { parse as parseURL } from "url";
@@ -267,7 +267,7 @@ class Window {
             }
         });
         this.browser.on("closed", () => {
-            browsers[id] = undefined;
+            delete browsers[id];
             if (this == cachedWindow) cachedWindow = null;
             if (this == lastActiveWindow) lastActiveWindow = null;
             // all non-cached windows closed, try auto update
@@ -290,9 +290,9 @@ class Window {
         let icon = isPreview ? "preview" : "latest";
         if (Math.floor(Math.random() * (10 + 1)) == 10) icon = "light";
         // await this.browser.loadURL(((app.isPackaged) ? ("file://" + __dirname + "/../..") : ("http://127.0.0.1:5500")) + "/browser.html?icon=" + icon);
-        await this.browser.loadURL(
-            "file://" + __dirname + "/../../browser.html?icon=" + icon
-        );
+        await this.browser.webContents.loadFile("browser.html", {
+            query: { icon: icon },
+        });
     }
     async startup(options: Browser.BrowserOptions) {
         let sessionPartition: string;
@@ -627,10 +627,10 @@ app.on("ready", async () => {
             favourite.sync();
         }
     });
-    ipcMain.on("relaunch-manager", (event) => {
+    ipcMain.on("relaunch", (event, global: boolean) => {
         ws.send(
             JSON.stringify({
-                id: "relaunch",
+                id: global ? "relaunch" : "relaunch-user",
                 data: {
                     user: user,
                 } as Manager.DataPackageIBase,

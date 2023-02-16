@@ -18,10 +18,33 @@ export function init(logger: ElectronLog) {
     log = logger.scope("acrylic");
     // only works on Windows
     if (process.platform == "win32") {
-        const wpPath = process.env["AppData"] + "\\Microsoft\\Windows\\Themes\\TranscodedWallpaper";
-        let exts = ["", "jpg", "jpeg", "bmp", "dib", "png", "jfif", "jpe", "gif", "tif", "tiff", "wdp", "heic", "heif", "heics", "heifs", "hif", "avci", "avcs", "avif", "avifs"];
+        const wpPath =
+            process.env["AppData"] + "\\Microsoft\\Windows\\Themes\\TranscodedWallpaper";
+        let exts = [
+            "",
+            "jpg",
+            "jpeg",
+            "bmp",
+            "dib",
+            "png",
+            "jfif",
+            "jpe",
+            "gif",
+            "tif",
+            "tiff",
+            "wdp",
+            "heic",
+            "heif",
+            "heics",
+            "heifs",
+            "hif",
+            "avci",
+            "avcs",
+            "avif",
+            "avifs",
+        ];
         for (let i = 0; i < exts.length; i++) {
-            const file = wpPath + ((exts[i] == "") ? ("") : ("." + exts[i]));
+            const file = wpPath + (exts[i] == "" ? "" : "." + exts[i]);
             if (existsSync(file)) {
                 bgFile = file;
                 break;
@@ -74,9 +97,9 @@ export function setEnabled(enabled: boolean) {
     let setVisible = () => {
         for (let i = 0; i < bgs.length; i++) {
             let element = <HTMLElement>bgs.item(i);
-            element.style.display = (enabled) ? "block" : "none";
+            element.style.display = enabled ? "block" : "none";
         }
-    }
+    };
     if (blurWorker) {
         blurWorker.terminate();
         blurWorker = undefined;
@@ -120,7 +143,10 @@ export async function reload() {
             try {
                 await new Promise((resolve, reject) => {
                     getPixels(dataBase64, (error, pixels) => {
-                        if (error) { reject(error); return; }
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
                         let canvas = document.createElement("canvas");
                         canvas.width = pixels.shape[0];
                         canvas.height = pixels.shape[1];
@@ -135,13 +161,14 @@ export async function reload() {
                             setTimeout(() => {
                                 for (let i = 0; i < bgs.length; i++) {
                                     let element = <HTMLElement>bgs.item(i);
-                                    element.style.backgroundImage = "url(" + blurDataBase64 + ")";
+                                    element.style.backgroundImage =
+                                        "url(" + blurDataBase64 + ")";
                                 }
                                 setFocus(true);
                             }, 200);
                             blurWorker.terminate();
                             blurWorker = null;
-                        }
+                        };
                         blurWorker.postMessage(pixels);
                         resolve(null);
                     });
@@ -164,7 +191,11 @@ export function updatePos() {
         let element = <HTMLElement>bgs.item(i);
         element.style.width = screen.width + "px";
         element.style.height = screen.height + "px";
-        var size: Array<number> = (bgSize[element.id]) ? (bgSize[element.id]) : ((curWin.isMaximized()) ? [0, 0] : curWin.getPosition());
+        var size: Array<number> = bgSize[element.id]
+            ? bgSize[element.id]
+            : curWin.isMaximized()
+            ? [0, 0]
+            : curWin.getPosition();
         element.style.left = -size[0] + "px";
         element.style.top = -size[1] + "px";
     }
@@ -175,6 +206,6 @@ export function setFocus(focus: boolean) {
     var bgs = document.querySelectorAll(bgName);
     for (let i = 0; i < bgs.length; i++) {
         let element = <HTMLElement>bgs.item(i);
-        element.style.opacity = (focus) ? "1" : "0";
+        element.style.opacity = focus ? "1" : "0";
     }
 }

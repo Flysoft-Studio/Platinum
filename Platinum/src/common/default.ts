@@ -3,14 +3,17 @@ import { isBackdropSupported } from "../platform/win32";
 export function getMgrDefaultOptions() {
     return {
         update: {
-            auto: (process.platform == "win32"),
+            auto: process.platform == "win32",
             channel: null,
         },
         applyrestart: null,
-    }
+    };
 }
 
-export function getDefaultOptions(user: string, electron: typeof Electron.CrossProcessExports) {
+export function getDefaultOptions(
+    user: string,
+    electron: typeof Electron.CrossProcessExports
+) {
     let downloadPath;
     try {
         downloadPath = electron.app.getPath("downloads");
@@ -23,28 +26,33 @@ export function getDefaultOptions(user: string, electron: typeof Electron.CrossP
                 enable: false,
                 token: "",
             },
-            desktoplink: (process.platform == "win32" && user != "default"),
+            desktoplink: process.platform == "win32" && user != "default",
         },
         search: {
-            engines: [{
-                name: "Bing",
-                url: "https://bing.com/search?q=%s",
-            }, {
-                name: "Google",
-                url: "https://google.com/search?q=%s",
-            }, {
-                name: "百度",
-                url: "https://baidu.com/s?wd=%s",
-            }, {
-                name: "搜狗",
-                url: "https://www.sogou.com/web?query=%s",
-            }],
+            engines: [
+                {
+                    name: "Bing",
+                    url: "https://bing.com/search?q=%s",
+                },
+                {
+                    name: "Google",
+                    url: "https://google.com/search?q=%s",
+                },
+                {
+                    name: "百度",
+                    url: "https://baidu.com/s?wd=%s",
+                },
+                {
+                    name: "搜狗",
+                    url: "https://www.sogou.com/web?query=%s",
+                },
+            ],
             current: 0,
         },
         appearance: {
             overall: "system",
             visual: {
-                blur: (process.platform == "win32"),
+                blur: process.platform == "win32",
                 fullblur: false,
                 usebackdrop: isBackdropSupported,
                 backdroptype: 2,
@@ -65,7 +73,7 @@ export function getDefaultOptions(user: string, electron: typeof Electron.CrossP
                 hardwareacceleration: true,
             },
             sleep: {
-                enable: (process.platform == "win32"),
+                enable: process.platform == "win32",
                 timeout: 3600000,
             },
         },
@@ -90,5 +98,5 @@ export function getDefaultOptions(user: string, electron: typeof Electron.CrossP
             path: downloadPath,
         },
         applyrestart: null,
-    }
+    };
 }

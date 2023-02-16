@@ -19,15 +19,16 @@ let userOtherContainer: HTMLElement;
 let userAdd: HTMLButtonElement;
 // sync with main process
 let user = remote.getGlobal("user") as string;
-let users = remote.getGlobal("users") as { object: Browser.UserInfoList; };
+let users = remote.getGlobal("users") as { object: Browser.UserInfoList };
 
 function getUserOtherElements(id: string) {
     const prefix = "#user_other_" + id;
-    if (!document.querySelector(prefix)) throw new Error("User Other Item " + id + " not exists");
+    if (!document.querySelector(prefix))
+        throw new Error("User Other Item " + id + " not exists");
     return {
         item: <HTMLButtonElement>document.querySelector(prefix),
         name: <HTMLElement>document.querySelector(prefix + " .user_other_name"),
-    }
+    };
 }
 
 export async function addUser() {
@@ -53,7 +54,8 @@ export function showMenu() {
 export function reloadAll() {
     // load info on the panel
     const curUser = deserialize(serialize(users.object[user]));
-    (<HTMLElement>document.querySelector(".user_info .user_name")).innerHTML = lang.encode((curUser.name) ? (curUser.name) : (lang.get("user_default")));
+    (<HTMLElement>document.querySelector(".user_info .user_name")).innerHTML =
+        lang.encode(curUser.name ? curUser.name : lang.get("user_default"));
     com.setUserPicture(".user_info .user_box", curUser.id, curUser.icon);
     com.setUserPicture("#nav_user .user_box", curUser.id, curUser.icon);
     com.setUserStatus(".user_info", remote.getGlobal("syncStatus"));
@@ -70,31 +72,42 @@ export function reloadAll() {
         const data = deserialize(serialize(users.object[key]));
         // skip current user
         if (user == data.id) continue;
-        let userItem = <HTMLElement>document.querySelector(".user_other_item.template").cloneNode(true);
+        let userItem = <HTMLElement>(
+            document.querySelector(".user_other_item.template").cloneNode(true)
+        );
         userItem.classList.remove("template");
         userItem.id = "user_other_" + data.id;
         userOtherContainer.insertBefore(userItem, userAdd);
         let userEle = getUserOtherElements(data.id);
         userMenu.registerEventsForElement(userEle.item);
-        userEle.name.innerHTML = lang.encode((data.name) ? (data.name) : (lang.get("user_default")));
+        userEle.name.innerHTML = lang.encode(
+            data.name ? data.name : lang.get("user_default")
+        );
         com.setUserPicture("#" + userItem.id + " .user_box", data.id, data.icon);
-        userEle.item.addEventListener("click", () => ipcRenderer.sendSync("users-active", data.id));
+        userEle.item.addEventListener("click", () =>
+            ipcRenderer.sendSync("users-active", data.id)
+        );
     }
 }
 
 export function editUser() {
-    let userEditInput = <HTMLInputElement>document.querySelector("#user_edit_input"), userEditIcon = <HTMLElement>document.querySelector("#user_edit_icon"), userEditOK = <HTMLElement>document.querySelector("#user_edit_ok"), userEditCancel = <HTMLElement>document.querySelector("#user_edit_cancel");
+    let userEditInput = <HTMLInputElement>document.querySelector("#user_edit_input"),
+        userEditIcon = <HTMLElement>document.querySelector("#user_edit_icon"),
+        userEditOK = <HTMLElement>document.querySelector("#user_edit_ok"),
+        userEditCancel = <HTMLElement>document.querySelector("#user_edit_cancel");
     let curUser = deserialize(serialize(users.object[user]));
-    userEditInput.value = (curUser.name) ? (curUser.name) : ("");
+    userEditInput.value = curUser.name ? curUser.name : "";
     userEditDialog.show();
     return new Promise<boolean>((resolve) => {
         userEditIcon.onclick = () => {
             let file = remote.dialog.showOpenDialogSync(com.curWin, {
-                filters: [{
-                    name: "Image file",
-                    properties: ["openFile"],
-                    extensions: ["gif", "jpg", "jpeg", "png", "svg", "webp"],
-                }],
+                filters: [
+                    {
+                        name: "Image file",
+                        properties: ["openFile"],
+                        extensions: ["gif", "jpg", "jpeg", "png", "svg", "webp"],
+                    },
+                ],
             });
             if (file && file.length == 1) {
                 let fileName = "userPicture" + extname(file[0]);
@@ -105,7 +118,7 @@ export function editUser() {
             }
             userEditDialog.hide();
             resolve(true);
-        }
+        };
         userEditOK.onclick = () => {
             userEditDialog.hide();
             let value = userEditInput.value;
@@ -113,11 +126,11 @@ export function editUser() {
             curUser.name = value;
             ipcRenderer.sendSync("users-edit", curUser);
             resolve(true);
-        }
+        };
         userEditCancel.onclick = () => {
             userEditDialog.hide();
             resolve(false);
-        }
+        };
     });
 }
 

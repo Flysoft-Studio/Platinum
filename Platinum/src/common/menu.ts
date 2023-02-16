@@ -49,34 +49,53 @@ export class Menu {
     public registerEventsForElement(element: HTMLElement) {
         let prevent = (event) => {
             if (!this.focusable) event.preventDefault();
-        }
-        if (!element.classList.contains("menu_item_text")) element.setAttribute("role", "menuitem");
+        };
+        if (!element.classList.contains("menu_item_text"))
+            element.setAttribute("role", "menuitem");
         else element.setAttribute("role", "presentation");
         element.addEventListener("mousedown", prevent);
         if (!element.classList.contains("menu_item_advanced")) {
             element.classList.add("stitle");
             element.setAttribute("role", "menuitem");
-            element.ariaLabel = lang.decode((<HTMLElement>element.firstElementChild.nextElementSibling).innerHTML);
+            element.ariaLabel = lang.decode(
+                (<HTMLElement>element.firstElementChild.nextElementSibling).innerHTML
+            );
             element.classList.add("ripple");
             registerRipple(element);
         }
-        if (!element.classList.contains("no_hide")) element.addEventListener("click", () => setTimeout(() => this.hide(), 500));
-        element.tabIndex = (this.focusable) ? 0 : -1;
+        if (!element.classList.contains("no_hide"))
+            element.addEventListener("click", () => setTimeout(() => this.hide(), 500));
+        element.tabIndex = this.focusable ? 0 : -1;
     }
     public showMenuUnderElement(elementID: string, sections: Array<string> = []) {
         this.showed = false;
-        let rect = (<HTMLElement>document.querySelector(elementID)).getBoundingClientRect();
-        this.show(rect.left, (document.body.classList.contains("fullscreen") && !document.body.classList.contains("fullscreen_show")) ? (30) : (rect.bottom + 10), sections);
+        let rect = (<HTMLElement>(
+            document.querySelector(elementID)
+        )).getBoundingClientRect();
+        this.show(
+            rect.left,
+            document.body.classList.contains("fullscreen") &&
+                !document.body.classList.contains("fullscreen_show")
+                ? 30
+                : rect.bottom + 10,
+            sections
+        );
     }
     public show(x: number, y: number, sections: Array<string> = []) {
         if (this.showed) return;
         this.showed = true;
-        if (this.animateTimer) { clearTimeout(this.animateTimer); this.animateTimer = null; }
+        if (this.animateTimer) {
+            clearTimeout(this.animateTimer);
+            this.animateTimer = null;
+        }
 
         let lastVisibleSection: HTMLElement;
         let section: HTMLElement = <HTMLElement>this.menu.firstElementChild;
         while (section) {
-            let visibility = (sections.length == 0) ? true : sections.includes(section.id.replace(this.id + "_", ""));
+            let visibility =
+                sections.length == 0
+                    ? true
+                    : sections.includes(section.id.replace(this.id + "_", ""));
             // section.dataset.visibility = (visibility) ? "true" : "false";
             com.setElementVisible(section, visibility);
             section.style.borderBottom = null;
@@ -89,8 +108,10 @@ export class Menu {
         let clientRect = app.getBoundingClientRect();
         requestAnimationFrame(() => {
             // set the pos of menu and its backdrop
-            if (x > clientRect.width - rect.width - 10) x = clientRect.width - rect.width - 10;
-            if (y > clientRect.height - rect.height - 10) y = clientRect.height - rect.height - 10;
+            if (x > clientRect.width - rect.width - 10)
+                x = clientRect.width - rect.width - 10;
+            if (y > clientRect.height - rect.height - 10)
+                y = clientRect.height - rect.height - 10;
             setElePos(this.menu, x, y);
             setElePos(this.backdrop, x, y, rect.width, rect.height);
 
@@ -143,7 +164,8 @@ export class Menu {
     }
     // Sets menu item's title
     public setItemTitle(item: string, langname: string, args: Array<string>) {
-        (<HTMLElement>document.querySelector("#" + this.id + "_" + item)).innerHTML = lang.encode(lang.get(langname, args));
+        (<HTMLElement>document.querySelector("#" + this.id + "_" + item)).innerHTML =
+            lang.encode(lang.get(langname, args));
     }
 }
 
@@ -154,10 +176,10 @@ export function closeAll() {
 }
 
 function setElePos(element: HTMLElement, l?: number, t?: number, w?: number, h?: number) {
-    element.style.left = (l) ? (l + "px") : null;
-    element.style.top = (t) ? (t + "px") : null;
-    element.style.width = (w) ? (w + "px") : null;
-    element.style.height = (h) ? (h + "px") : null;
+    element.style.left = l ? l + "px" : null;
+    element.style.top = t ? t + "px" : null;
+    element.style.width = w ? w + "px" : null;
+    element.style.height = h ? h + "px" : null;
 }
 
 window.addEventListener("load", async () => {

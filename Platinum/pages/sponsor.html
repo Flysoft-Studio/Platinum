@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light dark" />
+        <title class="text">{sponsor_title}</title>
+        <script>
+            let js = require("../build/pages/sponsor.js");
+        </script>
+        <link rel="stylesheet" href="../css/common.css" />
+        <link rel="stylesheet" href="../css/info.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <title class="text">{sponsor_title}</title>
-    <script>
-        let js = require("../build/pages/sponsor.js");
-    </script>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/info.css">
-</head>
-
-<body>
-    <div class="info">
-        <div class="info_vertical">
-            <div class="info_content">
-                <div class="info_title text">{sponsor_title}</div>
-                <div class="info_body text">{sponsor_body}</div>
+    <body>
+        <div class="info">
+            <div class="info_vertical">
+                <div class="info_content">
+                    <div class="info_title text">{sponsor_title}</div>
+                    <div class="info_body text">{sponsor_body}</div>
+                </div>
+                <div class="info_horizontal info_imglist">
+                    <img src="../img/sponsor/wx.png" alt="WeChat Pay" class="info_img" />
+                    <img src="../img/sponsor/alipay.jpg" alt="AliPay" class="info_img" />
+                </div>
+                <a
+                    class="info_body link text"
+                    href="https://www.microsoft.com/store/productId/9N5S8XGW37NB"
+                    target="_blank"
+                    >{sponsor_store}</a
+                >
             </div>
-            <div class="info_horizontal info_imglist">
-                <img src="../img/sponsor/wx.png" alt="WeChat Pay" class="info_img">
-                <img src="../img/sponsor/alipay.jpg" alt="AliPay" class="info_img">
-            </div>
-            <a class="info_body link text" href="https://www.microsoft.com/store/productId/9N5S8XGW37NB"
-                target="_blank">{sponsor_store}</a>
         </div>
-    </div>
-</body>
-
+    </body>
 </html>

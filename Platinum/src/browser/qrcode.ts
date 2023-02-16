@@ -18,20 +18,29 @@ export function setURL(url: string) {
 export function generateQRCode() {
     return new Promise((resolve, reject) => {
         let sourceURL = qrcodeURL.value;
-        toDataURL(sourceURL, {
-            type: "image/png",
-            margin: 2,
-        }, (error, url) => {
-            if (error) {
-                log.error("Failed to generate, sourceURL: " + sourceURL + ", reason: " + error);
-                reject(error);
+        toDataURL(
+            sourceURL,
+            {
+                type: "image/png",
+                margin: 2,
+            },
+            (error, url) => {
+                if (error) {
+                    log.error(
+                        "Failed to generate, sourceURL: " +
+                            sourceURL +
+                            ", reason: " +
+                            error
+                    );
+                    reject(error);
+                    return;
+                }
+                log.log("Generate successfully, sourceURL: " + sourceURL);
+                qrcodeImg.src = url;
+                resolve(null);
                 return;
             }
-            log.log("Generate successfully, sourceURL: " + sourceURL);
-            qrcodeImg.src = url;
-            resolve(null);
-            return;
-        });
+        );
     });
 }
 

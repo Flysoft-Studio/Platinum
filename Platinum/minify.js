@@ -1,12 +1,5 @@
-const {
-    readdirSync,
-    readFileSync,
-    writeFileSync,
-    statSync
-} = require("fs");
-const {
-    resolve
-} = require("path");
+const { readdirSync, readFileSync, writeFileSync, statSync } = require("fs");
+const { resolve } = require("path");
 const JavaScriptObfuscator = require("javascript-obfuscator");
 const UglifyJS = require("uglify-js");
 

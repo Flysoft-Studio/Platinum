@@ -9,7 +9,8 @@ let log: LogFunctions;
 
 let dir;
 export const isBlurSupported = process.platform == "win32";
-export const isBackdropSupported = process.platform == "win32" && verLte("10.0.22523", osRelease());
+export const isBackdropSupported =
+    process.platform == "win32" && verLte("10.0.22523", osRelease());
 
 export function init(logger: ElectronLog, electron: typeof Electron.CrossProcessExports) {
     log = logger.scope("native");

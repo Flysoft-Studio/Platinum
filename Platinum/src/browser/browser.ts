@@ -15,7 +15,15 @@ import * as sortable from "sortablejs";
 import { create as createLogger } from "electron-log";
 import { ipcRenderer } from "electron";
 import { parse as parseURL, format as formatURL } from "url";
-import { existsSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync, writeFileSync } from "fs";
+import {
+    existsSync,
+    readdirSync,
+    readFileSync,
+    rmdirSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from "fs";
 import { basename, dirname, extname, join, normalize, resolve } from "path";
 import { release as osRelease } from "os";
 import { lte as verLte } from "semver";
@@ -34,7 +42,8 @@ let level = remote.getGlobal("logLevel");
 logger.transports.console.level = level;
 logger.transports.ipc.level = false;
 logger.transports.file.level = level;
-logger.transports.file.resolvePath = () => normalize(remote.getGlobal("logDir") + "/renderer.log");
+logger.transports.file.resolvePath = () =>
+    normalize(remote.getGlobal("logDir") + "/renderer.log");
 const log = logger.scope("browser");
 
 export class Tab {
@@ -74,11 +83,20 @@ export class Tab {
             var listen = () => {
                 this.webview.removeEventListener("dom-ready", listen);
                 this.ready = true;
-                this.webcontents = remote.webContents.fromId(this.webview.getWebContentsId());
+                this.webcontents = remote.webContents.fromId(
+                    this.webview.getWebContentsId()
+                );
                 this.webcontents.stop();
-                if (this.internal) ipcRenderer.sendSync("enable-remote", this.webcontents.id);
+                if (this.internal)
+                    ipcRenderer.sendSync("enable-remote", this.webcontents.id);
                 // Example: Mozilla/5.0 (<Operating System>) AppleWebKit/<WebKit Version> (KHTML, like Gecko) Platinum/<Platinum Version> Chrome/<Chromium Version> Safari/<WebKit Version>
-                this.webcontents.setUserAgent(this.webcontents.getUserAgent().replace("Electron/" + process.versions.electron, "").replace(pkg.name, "Platinum").replace("  ", " "));
+                this.webcontents.setUserAgent(
+                    this.webcontents
+                        .getUserAgent()
+                        .replace("Electron/" + process.versions.electron, "")
+                        .replace(pkg.name, "Platinum")
+                        .replace("  ", " ")
+                );
                 this.webview.addEventListener("ipc-message", async (event) => {
                     if (event.channel == "process_info_pid") {
                         this.pid = event.args[0];
@@ -97,11 +115,17 @@ export class Tab {
                         await user.deleteUser();
                     } else if (event.channel == "relaunch") {
                         relaunch(event.args[0]);
-                    } else if (event.channel == "error_page_controller_proceed_to_unsafe_page") {
+                    } else if (
+                        event.channel == "error_page_controller_proceed_to_unsafe_page"
+                    ) {
                         if (!this.ready) return;
                         let url = this.webcontents.getURL();
                         let urlStruct = parseURL(url);
-                        if (urlStruct.hostname) ipcRenderer.send("add-ignorecerterrorhosts", urlStruct.hostname);
+                        if (urlStruct.hostname)
+                            ipcRenderer.send(
+                                "add-ignorecerterrorhosts",
+                                urlStruct.hostname
+                            );
                         this.jump(url);
                     }
                 });
@@ -110,7 +134,12 @@ export class Tab {
                 this.webcontents.addListener("before-input-event", keyPress);
                 this.webcontents.addListener("context-menu", (event, params) => {
                     pageMenuParam = params;
-                    log.log("Tab " + this.id + ": Context Menu params: " + JSON.stringify(pageMenuParam));
+                    log.log(
+                        "Tab " +
+                            this.id +
+                            ": Context Menu params: " +
+                            JSON.stringify(pageMenuParam)
+                    );
                     var sections = [];
                     var showNav = true;
                     if (pageMenuParam.linkURL != "") {
@@ -127,14 +156,16 @@ export class Tab {
                     }
                     if (pageMenuParam.selectionText != "") {
                         sections.push("select");
-                        pageMenu.setItemTitle("select_search", "page_select_search", [pageMenuParam.selectionText]);
+                        pageMenu.setItemTitle("select_search", "page_select_search", [
+                            pageMenuParam.selectionText,
+                        ]);
                     }
                     if (showNav) sections.push("nav", "save", "share");
                     sections.push("dev");
                     pageMenu.show(pageMenuParam.x, pageMenuParam.y, sections);
                 });
                 resolve(null);
-            }
+            };
             this.webview.addEventListener("dom-ready", listen);
             this.webview.preload = __dirname + "/preload.js";
             this.webview.src = "about:blank";
@@ -153,12 +184,22 @@ export class Tab {
     }
     public sleep() {
         if (this.sleepTimer) return;
-        let sleepEnabled = () => com.store.get("pfm.sleep.enable") as boolean && process.platform == "win32";
+        let sleepEnabled = () =>
+            (com.store.get("pfm.sleep.enable") as boolean) && process.platform == "win32";
         if (!sleepEnabled()) return;
         this.sleepTimer = setTimeout(() => {
             this.sleepTimer = null;
             if (!sleepEnabled()) return;
-            if (!this.ready || this.webcontents.isLoading() || this.webcontents.isCurrentlyAudible() || this.sleeping || !this.pid || this.id == curTab || this.mediaElementID || this.internal) {
+            if (
+                !this.ready ||
+                this.webcontents.isLoading() ||
+                this.webcontents.isCurrentlyAudible() ||
+                this.sleeping ||
+                !this.pid ||
+                this.id == curTab ||
+                this.mediaElementID ||
+                this.internal
+            ) {
                 this.sleep();
                 return;
             }
@@ -222,10 +263,14 @@ export class Tab {
         }
     }
     back() {
-        if (this.webview.canGoBack()) { this.webview.goBack(); }
+        if (this.webview.canGoBack()) {
+            this.webview.goBack();
+        }
     }
     forward() {
-        if (this.webview.canGoForward()) { this.webview.goForward(); }
+        if (this.webview.canGoForward()) {
+            this.webview.goForward();
+        }
     }
 }
 
@@ -245,7 +290,8 @@ class TabManager {
     public updateNavURL(url: string) {
         if (!urlBarChangeable) return;
         let tab = tabs[curTab];
-        (<HTMLInputElement>document.querySelector(".nav_url_input")).value = this.encodeURL(url);
+        (<HTMLInputElement>document.querySelector(".nav_url_input")).value =
+            this.encodeURL(url);
     }
     // file://XXX -> platinum://XXX
     public encodeURL(url: string) {
@@ -254,7 +300,8 @@ class TabManager {
             if (url.startsWith(urlchecker + "/")) urlchecker = urlchecker + "/";
             url = url.replace(urlchecker, com.scheme + "://").replace(/\.html/g, "");
         }
-        if (url.startsWith("chrome://")) url = url.replace("chrome://", com.scheme + "://");
+        if (url.startsWith("chrome://"))
+            url = url.replace("chrome://", com.scheme + "://");
         return url;
     }
     // file://XXX <- platinum://XXX
@@ -265,9 +312,11 @@ class TabManager {
             let urlPath = url.replace(com.scheme + "://", "");
             url = url.replace(com.scheme + "://", urlchecker + "/");
             let urlStruct = parseURL(url);
-            if (!urlStruct.pathname.endsWith(".html")) urlStruct.pathname = urlStruct.pathname + ".html";
+            if (!urlStruct.pathname.endsWith(".html"))
+                urlStruct.pathname = urlStruct.pathname + ".html";
             let file = decodeURIComponent(urlStruct.pathname);
-            if (process.platform == "win32" && file.startsWith("/")) file = file.substring(1);
+            if (process.platform == "win32" && file.startsWith("/"))
+                file = file.substring(1);
             file = normalize(file);
             if (!existsSync(file)) url = "chrome://" + urlPath;
             else {
@@ -278,60 +327,88 @@ class TabManager {
 
         return {
             decodedURL: url,
-            internal: internal
-        }
+            internal: internal,
+        };
     }
     public updateLoadingStatus(isLoading: boolean) {
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_refresh"), !isLoading);
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_stop"), isLoading);
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#nav_refresh"),
+            !isLoading
+        );
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#nav_stop"),
+            isLoading
+        );
     }
     public updateScaleValue() {
         let tab = tabs[curTab];
-        (<HTMLInputElement>document.querySelector(".scale_value")).innerHTML = lang.encode(Math.round((tab.ready) ? (tab.webcontents.getZoomFactor() * 100) : 100) + "%");
+        (<HTMLInputElement>document.querySelector(".scale_value")).innerHTML =
+            lang.encode(
+                Math.round(tab.ready ? tab.webcontents.getZoomFactor() * 100 : 100) + "%"
+            );
     }
     public updateFavStatus(isInFav: boolean) {
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_url_fav_add"), !isInFav);
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_url_fav_remove"), isInFav);
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#nav_url_fav_add"),
+            !isInFav
+        );
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#nav_url_fav_remove"),
+            isInFav
+        );
     }
     public updateSiteInfoIcon(icon: string) {
         let icons = ["unknown", "safe", "unsafe", "internal", "file"];
-        for (let i = 0; i < icons.length; i++) com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_url_siteinfo_" + icons[i]), icons[i] == icon);
+        for (let i = 0; i < icons.length; i++)
+            com.setElementVisible(
+                <HTMLButtonElement>(
+                    document.querySelector("#nav_url_siteinfo_" + icons[i])
+                ),
+                icons[i] == icon
+            );
     }
     public async updateTitle(id: number, title: string, url: string) {
         let tab = tabs[id];
         let tabEle = this.getTabElements(id);
-        if (title.startsWith("chrome://")) title = title.replace("chrome://", com.scheme + "://");
+        if (title.startsWith("chrome://"))
+            title = title.replace("chrome://", com.scheme + "://");
         if (title == "") title = lang.get("com_new_tab");
         tab.title = title;
         if (id == curTab) this.updateDocumentTitle(title);
-        tabEle.item.title = (title && title != "" && title != url) ? (title + "\n" + url) : (url);
+        tabEle.item.title =
+            title && title != "" && title != url ? title + "\n" + url : url;
         tabEle.radio.ariaLabel = title;
         tabEle.title.innerHTML = lang.encode(title);
-        if (tab.historyID) await this.historyUpdate(tab.id, null, tab.historyID, (value) => {
-            if (value) value.title = title;
-            return value;
-        });
+        if (tab.historyID)
+            await this.historyUpdate(tab.id, null, tab.historyID, (value) => {
+                if (value) value.title = title;
+                return value;
+            });
     }
     public updateDocumentTitle(title: string) {
         document.title = title + " - " + lang.get("com_name");
     }
     public listHistory(callback: Function) {
         return new Promise((resolve, reject) => {
-            let transaction = db.db.transaction("history", "readwrite").objectStore("history");
+            let transaction = db.db
+                .transaction("history", "readwrite")
+                .objectStore("history");
             let cursor = transaction.index("time").openCursor(undefined, "prev");
             cursor.onsuccess = () => {
                 if (cursor.result) {
                     callback(cursor.result.value);
                     cursor.result.continue();
                 } else resolve(null);
-            }
+            };
             cursor.onerror = () => {
                 reject("Error");
-            }
+            };
         });
     }
     public async removeHistory(ids: Array<number>) {
-        let transaction = db.db.transaction("history", "readwrite").objectStore("history");
+        let transaction = db.db
+            .transaction("history", "readwrite")
+            .objectStore("history");
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
             try {
@@ -341,11 +418,20 @@ class TabManager {
             }
         }
     }
-    public async historyUpdate(id: number, index: string, key: string | number, callback: Function) {
+    public async historyUpdate(
+        id: number,
+        index: string,
+        key: string | number,
+        callback: Function
+    ) {
         // save history
         let tab = tabs[id];
-        let transaction = db.db.transaction("history", "readwrite").objectStore("history");
-        let value = (index) ? (await db.request(transaction.index(index).get(key))) as any : (await db.request(transaction.get(key))) as any;
+        let transaction = db.db
+            .transaction("history", "readwrite")
+            .objectStore("history");
+        let value = index
+            ? ((await db.request(transaction.index(index).get(key))) as any)
+            : ((await db.request(transaction.get(key))) as any);
         if (value) {
             value = callback(value);
             if (value) tab.historyID = await db.request(transaction.put(value));
@@ -361,7 +447,14 @@ class TabManager {
 
         let decodedURL = url;
         let encodedURL = this.encodeURL(decodedURL);
-        log.log("Tab " + tab.id + ": Start navigation: " + encodedURL + ", inpage: " + isInPage);
+        log.log(
+            "Tab " +
+                tab.id +
+                ": Start navigation: " +
+                encodedURL +
+                ", inpage: " +
+                isInPage
+        );
         if (curTab == id) this.updateNavURL(encodedURL);
         // update zoom factor in more menu
         if (curTab == id) this.updateScaleValue();
@@ -379,21 +472,22 @@ class TabManager {
         let title = tab.getTitle(encodedURL);
 
         let time = new Date();
-        if (!browserOptions.guest) await this.historyUpdate(id, "url", encodedURL, (value) => {
-            if (value) {
-                value.time = time.getTime();
-                value.frequency++;
-                return value;
-            } else {
-                value = {
-                    url: encodedURL,
-                    time: time.getTime(),
-                    frequency: 0,
-                    icon: tab.icon,
+        if (!browserOptions.guest)
+            await this.historyUpdate(id, "url", encodedURL, (value) => {
+                if (value) {
+                    value.time = time.getTime();
+                    value.frequency++;
+                    return value;
+                } else {
+                    value = {
+                        url: encodedURL,
+                        time: time.getTime(),
+                        frequency: 0,
+                        icon: tab.icon,
+                    };
+                    return value;
                 }
-                return value;
-            }
-        });
+            });
 
         await this.updateTitle(id, title, encodedURL);
         this.updateFavStatus(favMgr.favourite.existsPage(encodedURL));
@@ -403,7 +497,10 @@ class TabManager {
                 tab.setSecurityStatus("unsafe");
             } else if (encodedURL.startsWith("https://")) {
                 tab.setSecurityStatus("unknown");
-            } else if (encodedURL.startsWith(com.scheme + "://") || encodedURL.startsWith("view-source:")) {
+            } else if (
+                encodedURL.startsWith(com.scheme + "://") ||
+                encodedURL.startsWith("view-source:")
+            ) {
                 tab.setSecurityStatus("internal");
             } else if (encodedURL.startsWith("file://")) {
                 tab.setSecurityStatus("file");
@@ -423,27 +520,40 @@ class TabManager {
             let urlStruct = parseURL(decodedURL);
             let port = parseInt(urlStruct.port);
             if (isNaN(port)) port = 443;
-            let tlsSocket = tlsConnect({
-                host: urlStruct.host,
-                servername: urlStruct.host,
-                port: port,
-                checkServerIdentity: () => {
-                    return null;
+            let tlsSocket = tlsConnect(
+                {
+                    host: urlStruct.host,
+                    servername: urlStruct.host,
+                    port: port,
+                    checkServerIdentity: () => {
+                        return null;
+                    },
+                    timeout: 10000,
                 },
-                timeout: 10000,
-            }, () => {
-                tab.securityX509Cert = tlsSocket.getPeerX509Certificate();
-                tlsSocket.destroy();
-            });
+                () => {
+                    tab.securityX509Cert = tlsSocket.getPeerX509Certificate();
+                    tlsSocket.destroy();
+                }
+            );
             tlsSocket.on("error", (error) => {
-                log.error("Cannot connect " + decodedURL + " using TLS, reason: " + error);
+                log.error(
+                    "Cannot connect " + decodedURL + " using TLS, reason: " + error
+                );
             });
             tab.setSecurityStatus("safe");
         }
 
         if (encodedURL.indexOf("LICENSES.chromium.html") != -1) {
-            await tab.webcontents.insertCSS(readFileSync(resolve(__dirname + "/../../libs/chromium/credits.css")).toString());
-            await tab.webcontents.insertCSS(readFileSync(resolve(__dirname + "/../../libs/chromium/text_defaults.css")).toString());
+            await tab.webcontents.insertCSS(
+                readFileSync(
+                    resolve(__dirname + "/../../libs/chromium/credits.css")
+                ).toString()
+            );
+            await tab.webcontents.insertCSS(
+                readFileSync(
+                    resolve(__dirname + "/../../libs/chromium/text_defaults.css")
+                ).toString()
+            );
         }
     }
     public async stopNavEvent(id: number, userGesture?: boolean) {
@@ -466,14 +576,22 @@ class TabManager {
         try {
             if (tab.internal) tab.webview.classList.remove("page_compatible");
             else {
-                let needCompatible = await tab.webcontents.executeJavaScript("window.platinum.needCompatible;");
-                if (needCompatible == false) tab.webview.classList.remove("page_compatible");
+                let needCompatible = await tab.webcontents.executeJavaScript(
+                    "window.platinum.needCompatible;"
+                );
+                if (needCompatible == false)
+                    tab.webview.classList.remove("page_compatible");
                 else {
-                    let content: string = await tab.webcontents.executeJavaScript("(()=>{let child=document.childNodes;let scheme=document.querySelector(\"meta[name=color-scheme]\");if(scheme)return scheme.content;else if(child.length==1&&child[0].tagName==\"svg\")return \"light dark\";else return null;})();");
+                    let content: string = await tab.webcontents.executeJavaScript(
+                        '(()=>{let child=document.childNodes;let scheme=document.querySelector("meta[name=color-scheme]");if(scheme)return scheme.content;else if(child.length==1&&child[0].tagName=="svg")return "light dark";else return null;})();'
+                    );
                     if (content) {
                         let supportedSchemes = content.split(" ");
-                        let curScheme = (remote.nativeTheme.shouldUseDarkColors) ? ("dark") : ("light");
-                        if (supportedSchemes.includes(curScheme)) tab.webview.classList.remove("page_compatible");
+                        let curScheme = remote.nativeTheme.shouldUseDarkColors
+                            ? "dark"
+                            : "light";
+                        if (supportedSchemes.includes(curScheme))
+                            tab.webview.classList.remove("page_compatible");
                         else tab.webview.classList.add("page_compatible");
                     } else tab.webview.classList.add("page_compatible");
                 }
@@ -499,9 +617,18 @@ class TabManager {
                 var domainTopDot = path.lastIndexOf(".", domainEnd);
                 if (domainTopDot == -1) search = true;
                 else {
-                    var domainTop = decodeURIComponent(path.substring(domainTopDot + 1, domainEnd));
-                    var domainFull = decodeURIComponent(path.substring(domainStart, domainEnd));
-                    if (domainTop.length >= 2 && !/\d/.test(domainTop) && domainFull.indexOf(" ") == -1 && domainFull.indexOf("..") == -1) {
+                    var domainTop = decodeURIComponent(
+                        path.substring(domainTopDot + 1, domainEnd)
+                    );
+                    var domainFull = decodeURIComponent(
+                        path.substring(domainStart, domainEnd)
+                    );
+                    if (
+                        domainTop.length >= 2 &&
+                        !/\d/.test(domainTop) &&
+                        domainFull.indexOf(" ") == -1 &&
+                        domainFull.indexOf("..") == -1
+                    ) {
                         url = "https://" + url;
                     } else {
                         search = true;
@@ -515,9 +642,15 @@ class TabManager {
         return url;
     }
     public processSearch(content: string) {
-        return (com.store.get("search.engines") as Array<any>)[com.store.get("search.current") as number].url.replace("%s", encodeURIComponent(content));
+        return (com.store.get("search.engines") as Array<any>)[
+            com.store.get("search.current") as number
+        ].url.replace("%s", encodeURIComponent(content));
     }
-    public async new(url: string = homepageURL, internal: boolean = false, oldID: number = -1) {
+    public async new(
+        url: string = homepageURL,
+        internal: boolean = false,
+        oldID: number = -1
+    ) {
         const decoded = tabMgr.decodeURL(url);
         if (decoded.internal) internal = true;
 
@@ -528,14 +661,25 @@ class TabManager {
         isOpingTab = true;
 
         let tab = new Tab();
-        let id: number = (oldID != -1) ? (oldID) : (tabs.length);
+        let id: number = oldID != -1 ? oldID : tabs.length;
         tabs[id] = tab;
 
-        log.log("Tab " + id + ": Creating tab, url: " + url + ", internal: " + internal + ", oldID: " + oldID);
+        log.log(
+            "Tab " +
+                id +
+                ": Creating tab, url: " +
+                url +
+                ", internal: " +
+                internal +
+                ", oldID: " +
+                oldID
+        );
 
         // tab element not exist, create one
         if (oldID == -1) {
-            let tabItem = <HTMLElement>document.querySelector(".tab.template").cloneNode(true);
+            let tabItem = <HTMLElement>(
+                document.querySelector(".tab.template").cloneNode(true)
+            );
             tabItem.classList.remove("template");
             tabItem.id = "tab_" + id;
             this.tabContainer.appendChild(tabItem);
@@ -560,9 +704,9 @@ class TabManager {
                     setTimeout(() => {
                         try {
                             tabEle.item.classList.add("tab_transition");
-                        } catch { }
+                        } catch {}
                     }, 300);
-                } catch { }
+                } catch {}
             });
 
             await this.updateTitle(id, lang.get("com_new_tab"), url);
@@ -571,7 +715,7 @@ class TabManager {
         // register dom events, update tab instance inside
         tabEle.radio.onclick = () => {
             this.switch(tab.id);
-        }
+        };
         tabEle.radio.onmousedown = (event) => {
             if (event.button == 1) {
                 if (event) {
@@ -580,15 +724,15 @@ class TabManager {
                 }
                 this.close(tab.id);
             }
-        }
+        };
         tabEle.close.onclick = (event) => {
             // prevents tabswitch
             if (event) event.stopPropagation();
             this.close(tab.id);
-        }
+        };
         tabEle.icon.onerror = () => {
             tabEle.icon.src = "./img/browser/tab/tab.svg";
-        }
+        };
 
         tabEle.icon.style.display = "none";
         tabEle.loading.style.display = "block";
@@ -605,23 +749,33 @@ class TabManager {
                 if (!tab.mediaElementID) return;
                 mediactrl.updatePlayState(tab, false);
             });
-            tab.webcontents.addListener("did-navigate", (event: Event,
-                url: string,
-                httpResponseCode: number,
-                httpStatusText: string) => {
-                if (tab.destroying) return;
-                this.navigateEvent(tab.id, url);
-            });
-            tab.webcontents.addListener("did-start-navigation", (event: Event,
-                url: string,
-                /* is in-page navigate */
-                isInPlace: boolean,
-                isMainFrame: boolean,
-                frameProcessId: number,
-                frameRoutingId: number) => {
-                if (tab.destroying || !isMainFrame) return;
-                this.startNavEvent(tab.id, url, isInPlace);
-            });
+            tab.webcontents.addListener(
+                "did-navigate",
+                (
+                    event: Event,
+                    url: string,
+                    httpResponseCode: number,
+                    httpStatusText: string
+                ) => {
+                    if (tab.destroying) return;
+                    this.navigateEvent(tab.id, url);
+                }
+            );
+            tab.webcontents.addListener(
+                "did-start-navigation",
+                (
+                    event: Event,
+                    url: string,
+                    /* is in-page navigate */
+                    isInPlace: boolean,
+                    isMainFrame: boolean,
+                    frameProcessId: number,
+                    frameRoutingId: number
+                ) => {
+                    if (tab.destroying || !isMainFrame) return;
+                    this.startNavEvent(tab.id, url, isInPlace);
+                }
+            );
             // tab.webcontents.addListener("did-navigate-in-page", (event: Event,
             //     url: string,
             //     isMainFrame: boolean,
@@ -636,36 +790,102 @@ class TabManager {
                 if (tab.destroying) return;
                 this.stopNavEvent(tab.id);
             });
-            tab.webcontents.addListener("did-fail-load", async (event: Event,
-                errorCode: number,
-                errorDescription: string,
-                validatedURL: string,
-                isMainFrame: boolean,
-                frameProcessId: number,
-                frameRoutingId: number) => {
-                if (tab.destroying) return;
-                if (!isMainFrame) return;
-                let ignoreList = [-2, -3, -7];
-                if (ignoreList.includes(errorCode)) return;
-                log.log("Tab " + tab.id + ": Failed to load");
-                // to UTF-8
-                let encodeText = (str: string) => {
-                    if (str.length == 0) return;
-                    let res = [];
-                    for (var i = 0; i < str.length; i++)
-                        res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-4);
-                    return ("&#x" + res.join(";&#x") + ";").replace(/&#x00a;/g, "<br>");
+            tab.webcontents.addListener(
+                "did-fail-load",
+                async (
+                    event: Event,
+                    errorCode: number,
+                    errorDescription: string,
+                    validatedURL: string,
+                    isMainFrame: boolean,
+                    frameProcessId: number,
+                    frameRoutingId: number
+                ) => {
+                    if (tab.destroying) return;
+                    if (!isMainFrame) return;
+                    let ignoreList = [-2, -3, -7];
+                    if (ignoreList.includes(errorCode)) return;
+                    log.log("Tab " + tab.id + ": Failed to load");
+                    // to UTF-8
+                    let encodeText = (str: string) => {
+                        if (str.length == 0) return;
+                        let res = [];
+                        for (var i = 0; i < str.length; i++)
+                            res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-4);
+                        return ("&#x" + res.join(";&#x") + ";").replace(
+                            /&#x00a;/g,
+                            "<br>"
+                        );
+                    };
+                    let errorInfo = lang.get(
+                        "errno_" + errorCode.toString(),
+                        [this.encodeURL(tab.webcontents.getURL())],
+                        false
+                    );
+                    if (!errorInfo) errorInfo = lang.get("errno_unknown");
+                    tab.setSecurityStatus("unsafe");
+                    tab.updateSecret();
+                    await tab.webcontents.executeJavaScript(
+                        "document.querySelector('html').lang='en';window.platinum.needCompatible=false;document.querySelector('html').innerHTML=atob('" +
+                            Buffer.from(
+                                readFileSync(__dirname + "/../../error.html")
+                                    .toString()
+                                    .replace(
+                                        "/*!<CSS>!*/",
+                                        readFileSync(
+                                            __dirname + "/../../css/error.css"
+                                        ).toString() +
+                                            "*,*::before,*::after{--theme-color:" +
+                                            getComputedStyle(document.body).color +
+                                            "}.error_icon{content:url(data:image/svg+xml;base64," +
+                                            Buffer.from(
+                                                readFileSync(
+                                                    __dirname +
+                                                        "/../../img/error/icon.svg"
+                                                ).toString()
+                                            ).toString("base64") +
+                                            ");}"
+                                    )
+                                    .replace(
+                                        "<!--!<Title>!-->",
+                                        encodeText(lang.get("error_title"))
+                                    )
+                                    .replace("<!--!<Detail>!-->", encodeText(errorInfo))
+                                    .replace(
+                                        "<!--!<Code>!-->",
+                                        encodeText(
+                                            errorDescription ? errorDescription : ""
+                                        )
+                                    )
+                                    .replace(
+                                        "<!--!<GameText>!-->",
+                                        encodeText(lang.get("error_game"))
+                                    )
+                                    .replace(
+                                        "<!--!<ProceedToUnsafePageText>!-->",
+                                        encodeText(
+                                            lang.get("error_proceed_to_unsafe_page")
+                                        )
+                                    )
+                            ).toString("base64") +
+                            "')"
+                    );
+                    let buttons = [];
+                    // cert
+                    if (errorCode <= -200 && errorCode > -300)
+                        buttons.push("proceed_to_unsafe_page");
+                    await tab.webcontents.executeJavaScript(
+                        readFileSync(__dirname + "/../pages/errorPage.js")
+                            .toString()
+                            .replace("!<Secret>!", tab.secret)
+                            .replace(
+                                '"!<Buttons>!"',
+                                buttons.length != 0 ? '"' + buttons.join('","') + '"' : ""
+                            ),
+                        true
+                    );
                 }
-                let errorInfo = lang.get("errno_" + errorCode.toString(), [this.encodeURL(tab.webcontents.getURL())], false);
-                if (!errorInfo) errorInfo = lang.get("errno_unknown");
-                tab.setSecurityStatus("unsafe");
-                tab.updateSecret();
-                await tab.webcontents.executeJavaScript("document.querySelector('html').lang='en';window.platinum.needCompatible=false;document.querySelector('html').innerHTML=atob('" + Buffer.from(readFileSync(__dirname + "/../../error.html").toString().replace("/*!<CSS>!*/", readFileSync(__dirname + "/../../css/error.css").toString() + "*,*::before,*::after{--theme-color:" + getComputedStyle(document.body).color + "}.error_icon{content:url(data:image/svg+xml;base64," + Buffer.from(readFileSync(__dirname + "/../../img/error/icon.svg").toString()).toString("base64") + ");}").replace("<!--!<Title>!-->", encodeText(lang.get("error_title"))).replace("<!--!<Detail>!-->", encodeText(errorInfo)).replace("<!--!<Code>!-->", encodeText((errorDescription) ? (errorDescription) : (""))).replace("<!--!<GameText>!-->", encodeText(lang.get("error_game"))).replace("<!--!<ProceedToUnsafePageText>!-->", encodeText(lang.get("error_proceed_to_unsafe_page")))).toString("base64") + "')");
-                let buttons = [];
-                // cert
-                if (errorCode <= -200 && errorCode > -300) buttons.push("proceed_to_unsafe_page");
-                await tab.webcontents.executeJavaScript(readFileSync(__dirname + "/../pages/errorPage.js").toString().replace("!<Secret>!", tab.secret).replace("\"!<Buttons>!\"", (buttons.length != 0) ? ("\"" + buttons.join("\",\"") + "\"") : ("")), true);
-            });
+            );
             // https://github.com/electron/remote/issues/120 causes "The window open handler response must be an object, but was instead of type 'undefined'."
             // tab.webcontents.setWindowOpenHandler((details) => {
             //     this.new(details.url);
@@ -676,36 +896,56 @@ class TabManager {
             // use ipc instead
             ipcRenderer.send("set-windowopenhandler", tab.webcontents.id);
 
-            tab.webcontents.addListener("page-favicon-updated", async (event, favicons) => {
-                if (tab.destroying) return;
-                // use svg first
-                if (favicons.length < 1) return;
-                let icon = favicons[0];
-                for (let i = 0; i < favicons.length; i++) {
-                    if (favicons[i].indexOf(".svg") != -1) icon = favicons[i];
+            tab.webcontents.addListener(
+                "page-favicon-updated",
+                async (event, favicons) => {
+                    if (tab.destroying) return;
+                    // use svg first
+                    if (favicons.length < 1) return;
+                    let icon = favicons[0];
+                    for (let i = 0; i < favicons.length; i++) {
+                        if (favicons[i].indexOf(".svg") != -1) icon = favicons[i];
+                    }
+                    let iconRes = await fetch(icon);
+                    if (iconRes.headers.has("Content-Type")) {
+                        let mime = iconRes.headers.get("Content-Type");
+
+                        let data = await iconRes.arrayBuffer();
+                        let dataBase64 =
+                            "data:image/" +
+                            mime +
+                            ";base64," +
+                            Buffer.from(data).toString("base64");
+
+                        tab.icon = dataBase64;
+                        tabEle.icon.src = dataBase64;
+
+                        if (tab.historyID)
+                            await this.historyUpdate(
+                                tab.id,
+                                null,
+                                tab.historyID,
+                                (value) => {
+                                    if (value) value.icon = dataBase64;
+                                    return value;
+                                }
+                            );
+                    }
                 }
-                let iconRes = await fetch(icon);
-                if (iconRes.headers.has("Content-Type")) {
-                    let mime = iconRes.headers.get("Content-Type");
-
-                    let data = await iconRes.arrayBuffer();
-                    let dataBase64 = "data:image/" + mime + ";base64," + Buffer.from(data).toString("base64");
-
-                    tab.icon = dataBase64;
-                    tabEle.icon.src = dataBase64;
-
-                    if (tab.historyID) await this.historyUpdate(tab.id, null, tab.historyID, (value) => {
-                        if (value) value.icon = dataBase64;
-                        return value;
-                    });
-                }
-            });
+            );
             tab.webcontents.addListener("page-title-updated", async (event, title) => {
                 if (tab.destroying) return;
-                await this.updateTitle(tab.id, title, this.encodeURL(tab.webcontents.getURL()));
+                await this.updateTitle(
+                    tab.id,
+                    title,
+                    this.encodeURL(tab.webcontents.getURL())
+                );
             });
             tab.webcontents.addListener("devtools-opened", () => {
-                ipcRenderer.send("set-windowopenhandler", tab.webcontents.devToolsWebContents.id);
+                ipcRenderer.send(
+                    "set-windowopenhandler",
+                    tab.webcontents.devToolsWebContents.id
+                );
             });
             if (tab.id == curTab) {
                 com.setElementVisible(tab.webview, true);
@@ -748,7 +988,7 @@ class TabManager {
                 tabEle.item.classList.add("tab_closing");
             }
 
-            let animationDuration = (keepElements) ? (0) : (200);
+            let animationDuration = keepElements ? 0 : 200;
 
             setTimeout(() => {
                 requestAnimationFrame(() => {
@@ -804,13 +1044,17 @@ class TabManager {
             title: <HTMLDivElement>document.querySelector(prefix + " .tab_title"),
             close: <HTMLButtonElement>document.querySelector(prefix + " .tab_close"),
             radio: <HTMLInputElement>document.querySelector(prefix + " .tab_radio"),
-            rect: (<HTMLButtonElement>document.querySelector(prefix)).getBoundingClientRect(),
-        }
+            rect: (<HTMLButtonElement>(
+                document.querySelector(prefix)
+            )).getBoundingClientRect(),
+        };
     }
     public reloadTabStyle() {
         let tabBoxRect = this.tabBox.getBoundingClientRect();
         let tabNewRect = this.tabNew.getBoundingClientRect();
-        tabWidth = (tabBoxRect.width - tabNewRect.width - 8 * 2 - (tabs.length - 1) * 2 * 2) / tabs.length;
+        tabWidth =
+            (tabBoxRect.width - tabNewRect.width - 8 * 2 - (tabs.length - 1) * 2 * 2) /
+            tabs.length;
         if (tabWidth > 300) tabWidth = 300;
         for (let i = 0; i < tabs.length; i++) {
             let tabEle = this.getTabElements(i);
@@ -819,8 +1063,7 @@ class TabManager {
                 if (tabWidth >= 40) {
                     tabEle.item.classList.add("tab_medium");
                     tabEle.item.classList.remove("tab_small");
-                }
-                else {
+                } else {
                     tabEle.item.classList.remove("tab_medium");
                     tabEle.item.classList.add("tab_small");
                 }
@@ -860,7 +1103,11 @@ class TabManager {
             this.updateNavURL(tab.webcontents.getURL());
             this.updateLoadingStatus(tab.webcontents.isLoading());
             this.updateScaleValue();
-            this.updateFavStatus(favMgr.favourite.existsPage((<HTMLInputElement>document.querySelector(".nav_url_input")).value));
+            this.updateFavStatus(
+                favMgr.favourite.existsPage(
+                    (<HTMLInputElement>document.querySelector(".nav_url_input")).value
+                )
+            );
             com.setElementVisible(tab.webview, true);
             com.setElementVisible(tabMgr.pagePlaceholder, false);
         } else {
@@ -886,7 +1133,12 @@ class FavouriteManager {
     public favSwap: sortable;
     public favFolderSwap: sortable;
     constructor() {
-        this.favourite = new Favourite(com.store, logger, remote.getGlobal("dataDir") + "/favourites.json", remote.getGlobal("dataDir") + "/favouritesIndex.json");
+        this.favourite = new Favourite(
+            com.store,
+            logger,
+            remote.getGlobal("dataDir") + "/favourites.json",
+            remote.getGlobal("dataDir") + "/favouritesIndex.json"
+        );
         this.favContainer = <HTMLElement>document.querySelector("#favbar");
         this.favFolderContainer = <HTMLElement>document.querySelector("#menu_favfd_main");
         this.favMoveContainer = <HTMLElement>document.querySelector("#fav_move_options");
@@ -899,14 +1151,17 @@ class FavouriteManager {
         let tab = tabs[curTab];
         let url = (<HTMLInputElement>document.querySelector(".nav_url_input")).value;
         if (tab.ready) {
-            this.favourite.addItem({
-                type: 0,
-                page: {
-                    url: url,
-                    icon: tab.icon,
+            this.favourite.addItem(
+                {
+                    type: 0,
+                    page: {
+                        url: url,
+                        icon: tab.icon,
+                    },
+                    title: tab.getTitle(),
                 },
-                title: tab.getTitle(),
-            }, this.favourite.data);
+                this.favourite.data
+            );
             tabMgr.updateFavStatus(true);
         }
     }
@@ -914,14 +1169,18 @@ class FavouriteManager {
         let tab = tabs[curTab];
         let url = (<HTMLInputElement>document.querySelector(".nav_url_input")).value;
         if (tab.ready) {
-            this.favourite.removeItem({
-                type: 0,
-                page: {
-                    url: url,
-                    icon: tab.icon,
+            this.favourite.removeItem(
+                {
+                    type: 0,
+                    page: {
+                        url: url,
+                        icon: tab.icon,
+                    },
+                    title: tab.getTitle(),
                 },
-                title: tab.getTitle(),
-            }, this.favourite.data, true);
+                this.favourite.data,
+                true
+            );
             tabMgr.updateFavStatus(false);
         }
     }
@@ -937,11 +1196,14 @@ class FavouriteManager {
                     element.remove();
                 }
             }
-            if (this.favourite.data.length == 0) document.body.classList.add("hide_favbar");
+            if (this.favourite.data.length == 0)
+                document.body.classList.add("hide_favbar");
             else document.body.classList.remove("hide_favbar");
             for (var i = 0; i < this.favourite.data.length; i++) {
                 const data = this.favourite.data[i];
-                let favItem = <HTMLElement>document.querySelector(".fav_item.template").cloneNode(true);
+                let favItem = <HTMLElement>(
+                    document.querySelector(".fav_item.template").cloneNode(true)
+                );
                 favItem.classList.remove("template");
                 let id: number = i;
                 favItem.id = "fav_" + id;
@@ -952,7 +1214,9 @@ class FavouriteManager {
                 let sections = ["delete"];
                 let clickEventHandler: Function;
                 if (data.type == 0) {
-                    favEle.icon.src = (data.page.icon) ? (data.page.icon) : ("./img/browser/tab/tab.svg");
+                    favEle.icon.src = data.page.icon
+                        ? data.page.icon
+                        : "./img/browser/tab/tab.svg";
                     favEle.icon.addEventListener("error", () => {
                         favEle.icon.src = "./img/browser/tab/tab.svg";
                     });
@@ -966,28 +1230,32 @@ class FavouriteManager {
                     clickEventHandler = () => {
                         let rect = favEle.item.getBoundingClientRect();
                         favItemMenuRoot = data.folder.children;
-                        this.showFolder(data.folder.children, rect.left, rect.bottom + 10);
+                        this.showFolder(
+                            data.folder.children,
+                            rect.left,
+                            rect.bottom + 10
+                        );
                     };
                     favEle.item.title = data.title;
                 }
                 favEle.radio.addEventListener("mouseup", (event) => {
-                    if (event.button == 0 || event.button == 1)
-                        clickEventHandler();
+                    if (event.button == 0 || event.button == 1) clickEventHandler();
                 });
                 favEle.radio.addEventListener("keydown", (event) => {
-                    if (event.key == "Enter")
-                        clickEventHandler();
+                    if (event.key == "Enter") clickEventHandler();
                 });
                 favEle.radio.addEventListener("keyup", (event) => {
-                    if (event.key == " ")
-                        clickEventHandler();
+                    if (event.key == " ") clickEventHandler();
                 });
                 favEle.radio.addEventListener("contextmenu", (event) => {
                     event.preventDefault();
                     event.stopImmediatePropagation();
                     favItemMenuRoot = this.favourite.data;
                     favItemMenuItem = data;
-                    setTimeout(() => favItemMenu.show(event.clientX, event.clientY, sections), 100);
+                    setTimeout(
+                        () => favItemMenu.show(event.clientX, event.clientY, sections),
+                        100
+                    );
                 });
             }
         } catch (error) {
@@ -1009,7 +1277,9 @@ class FavouriteManager {
         // generate item list
         for (var i = 0; i < root.length; i++) {
             const data = root[i];
-            let favItem = <HTMLElement>document.querySelector(".favfd_item.template").cloneNode(true);
+            let favItem = <HTMLElement>(
+                document.querySelector(".favfd_item.template").cloneNode(true)
+            );
             favItem.classList.remove("template");
             let id: number = i;
             favItem.id = "favfd_" + id;
@@ -1018,7 +1288,9 @@ class FavouriteManager {
             favFolderMenu.registerEventsForElement(favEle.item);
             favEle.title.innerHTML = lang.encode(data.title);
             if (data.type == 0) {
-                favEle.icon.src = (data.page.icon) ? (data.page.icon) : ("./img/browser/tab/tab.svg");
+                favEle.icon.src = data.page.icon
+                    ? data.page.icon
+                    : "./img/browser/tab/tab.svg";
                 favEle.item.addEventListener("click", () => {
                     tabMgr.new(data.page.url);
                 });
@@ -1059,13 +1331,19 @@ class FavouriteManager {
                 title = data.title;
             }
 
-            let favItem = <HTMLElement>document.querySelector(".fav_move_item.template").cloneNode(true);
+            let favItem = <HTMLElement>(
+                document.querySelector(".fav_move_item.template").cloneNode(true)
+            );
             favItem.classList.remove("template");
-            let id = (i == 0) ? ("root") : ((i - 1).toString());
+            let id = i == 0 ? "root" : (i - 1).toString();
             favItem.id = "fav_move_" + id;
             this.favMoveContainer.appendChild(favItem);
-            let favLabel = <HTMLElement>document.querySelector("#fav_move_" + id + ">label");
-            let favInput = <HTMLInputElement>document.querySelector("#fav_move_" + id + ">input");
+            let favLabel = <HTMLElement>(
+                document.querySelector("#fav_move_" + id + ">label")
+            );
+            let favInput = <HTMLInputElement>(
+                document.querySelector("#fav_move_" + id + ">input")
+            );
             favLabel.innerHTML = lang.encode(title);
             favInput.dataset.id = id;
             // check "root"
@@ -1077,44 +1355,51 @@ class FavouriteManager {
         return new Promise<boolean>((resolve, reject) => {
             (<HTMLElement>document.querySelector("#fav_move_ok")).onclick = () => {
                 favMoveDialog.hide();
-                let items = <NodeListOf<HTMLInputElement>>document.querySelectorAll(".fav_move_item:not(.template)>input");
+                let items = <NodeListOf<HTMLInputElement>>(
+                    document.querySelectorAll(".fav_move_item:not(.template)>input")
+                );
                 for (let i = 0; i < items.length; i++) {
                     const element = items.item(i);
                     if (element.checked) {
                         // target folder
                         let folder = this.favourite.data;
-                        if (i != 0) folder = this.favourite.data[parseInt(element.dataset.id)].folder.children;
+                        if (i != 0)
+                            folder =
+                                this.favourite.data[parseInt(element.dataset.id)].folder
+                                    .children;
                         // remove page in orginal folder
                         this.favourite.move(favItemMenuItem, favItemMenuRoot, folder);
                         break;
                     }
                 }
                 resolve(true);
-            }
+            };
             (<HTMLElement>document.querySelector("#fav_move_cancel")).onclick = () => {
                 favMoveDialog.hide();
                 resolve(false);
-            }
+            };
         });
     }
     public getElements(id: number) {
         const prefix = "#fav_" + id;
-        if (!document.querySelector(prefix)) throw new Error("Favourite " + id + " not exists");
+        if (!document.querySelector(prefix))
+            throw new Error("Favourite " + id + " not exists");
         return {
             item: <HTMLButtonElement>document.querySelector(prefix),
             icon: <HTMLImageElement>document.querySelector(prefix + " .fav_icon"),
             title: <HTMLElement>document.querySelector(prefix + " .fav_title"),
             radio: <HTMLElement>document.querySelector(prefix + " .fav_radio"),
-        }
+        };
     }
     public getFavFolderElements(id: number) {
         const prefix = "#favfd_" + id;
-        if (!document.querySelector(prefix)) throw new Error("Favourite Folder Item " + id + " not exists");
+        if (!document.querySelector(prefix))
+            throw new Error("Favourite Folder Item " + id + " not exists");
         return {
             item: <HTMLButtonElement>document.querySelector(prefix),
             icon: <HTMLImageElement>document.querySelector(prefix + " .favfd_icon>img"),
             title: <HTMLElement>document.querySelector(prefix + " .favfd_title"),
-        }
+        };
     }
 }
 
@@ -1129,8 +1414,12 @@ export let isOpingTab: boolean = false;
 export let mediaControls: Array<string> = [];
 export let langLocale: string;
 export let homepageURL: string;
-const urlcheck = encodeURI("file://" + ((process.platform == "win32") ? ("/") : ("")) + resolve(__dirname + "/../../pages").replace(/\\/g, "/"));
-const macSuffix = (process.platform == "darwin") ? ("_mac") : ("");
+const urlcheck = encodeURI(
+    "file://" +
+        (process.platform == "win32" ? "/" : "") +
+        resolve(__dirname + "/../../pages").replace(/\\/g, "/")
+);
+const macSuffix = process.platform == "darwin" ? "_mac" : "";
 export let pageMenu: Menu;
 export let pageMenuParam: Electron.ContextMenuParams;
 export let editMenu: Menu;
@@ -1157,21 +1446,35 @@ let isInitStartRequested: boolean = false;
 
 export function dialog(options: Browser.DialogOptions) {
     return new Promise<Browser.DialogRet>((resolve) => {
-        if (inputDialog.showed) resolve({
-            button: "failed",
-        });
-        let inputInput = <HTMLInputElement>document.querySelector("#input_input"), inputCheckbox = <HTMLElement>document.querySelector("#input_checkbox"), inputCheckboxInput = <HTMLInputElement>document.querySelector("#input_checkbox_input"), inputCheckboxText = <HTMLElement>document.querySelector("#input_checkbox_text"), inputTitle = <HTMLElement>document.querySelector("#input_title"), inputSubTitle = <HTMLElement>document.querySelector("#input_subtitle"), inputOK = <HTMLElement>document.querySelector("#input_ok"), inputCancel = <HTMLElement>document.querySelector("#input_cancel");
+        if (inputDialog.showed)
+            resolve({
+                button: "failed",
+            });
+        let inputInput = <HTMLInputElement>document.querySelector("#input_input"),
+            inputCheckbox = <HTMLElement>document.querySelector("#input_checkbox"),
+            inputCheckboxInput = <HTMLInputElement>(
+                document.querySelector("#input_checkbox_input")
+            ),
+            inputCheckboxText = <HTMLElement>(
+                document.querySelector("#input_checkbox_text")
+            ),
+            inputTitle = <HTMLElement>document.querySelector("#input_title"),
+            inputSubTitle = <HTMLElement>document.querySelector("#input_subtitle"),
+            inputOK = <HTMLElement>document.querySelector("#input_ok"),
+            inputCancel = <HTMLElement>document.querySelector("#input_cancel");
         inputTitle.innerHTML = lang.encode(options.title);
-        inputSubTitle.innerHTML = lang.encode((options.subtitle) ? (options.subtitle) : (""));
+        inputSubTitle.innerHTML = lang.encode(options.subtitle ? options.subtitle : "");
 
         com.setElementVisible(inputInput, options.input != undefined);
         com.setElementVisible(inputCheckbox, options.checkbox != undefined);
         if (options.checkbox != undefined) {
             inputCheckboxText.innerHTML = lang.encode(options.checkbox.text);
-            inputCheckboxInput.checked = (options.checkbox.default) ? (options.checkbox.default) : (false);
+            inputCheckboxInput.checked = options.checkbox.default
+                ? options.checkbox.default
+                : false;
         }
         if (options.input != undefined) {
-            inputInput.value = (options.input.default) ? (options.input.default) : ("");
+            inputInput.value = options.input.default ? options.input.default : "";
         }
 
         inputDialog.show();
@@ -1179,25 +1482,26 @@ export function dialog(options: Browser.DialogOptions) {
         inputOK.onclick = () => {
             let ret: Browser.DialogRet = {
                 button: "ok",
-            }
+            };
             if (options.checkbox != undefined) {
                 let value = inputCheckboxInput.checked;
                 ret.checkbox = value;
             }
             if (options.input != undefined) {
                 let value = inputInput.value;
-                if (!options.input.allowEmptyValues && value.replace(/ /, "") == "") return;
+                if (!options.input.allowEmptyValues && value.replace(/ /, "") == "")
+                    return;
                 ret.input = value;
             }
             inputDialog.hide();
             resolve(ret);
-        }
+        };
         inputCancel.onclick = () => {
             inputDialog.hide();
             resolve({
                 button: "cancel",
             });
-        }
+        };
     });
 }
 
@@ -1213,9 +1517,8 @@ export function setFullScreen(fullscreen: boolean = !isFullScreen) {
 export function setFullScreenStyle(triggeredByHTML: boolean = false) {
     if (isFullScreen) {
         document.body.classList.add("fullscreen");
-        com.showTip(lang.get((triggeredByHTML) ? "fullscreen_html_tip" : "fullscreen_tip"));
-    }
-    else {
+        com.showTip(lang.get(triggeredByHTML ? "fullscreen_html_tip" : "fullscreen_tip"));
+    } else {
         document.body.classList.remove("fullscreen");
         document.body.classList.remove("fullscreen_show");
     }
@@ -1224,11 +1527,14 @@ export function setFullScreenStyle(triggeredByHTML: boolean = false) {
 
 export function setTaskbarVisibility(isVisible: boolean) {
     if (process.platform == "win32") {
-        win32.spawnHelper(["set_taskbar_visibility", (isVisible) ? ("show") : ("hide")]);
+        win32.spawnHelper(["set_taskbar_visibility", isVisible ? "show" : "hide"]);
     }
 }
 
-export function newWindow(source: "favItem" | "pageLink" | "default", guest: boolean = null) {
+export function newWindow(
+    source: "favItem" | "pageLink" | "default",
+    guest: boolean = null
+) {
     let options: Browser.BrowserOptions = {};
     switch (source) {
         case "favItem":
@@ -1243,7 +1549,7 @@ export function newWindow(source: "favItem" | "pageLink" | "default", guest: boo
         default:
             break;
     }
-    options.guest = (guest == null) ? (options.guest) : (guest);
+    options.guest = guest == null ? options.guest : guest;
     ipcRenderer.send("new-window", options);
 }
 
@@ -1281,11 +1587,15 @@ export async function favOp(type: string) {
                 allowEmptyValues: false,
             },
         });
-        if (ret.button == "ok") favMgr.favourite.addItem({ type: 1, folder: { children: [], }, title: ret.input, }, favMgr.favourite.data);
+        if (ret.button == "ok")
+            favMgr.favourite.addItem(
+                { type: 1, folder: { children: [] }, title: ret.input },
+                favMgr.favourite.data
+            );
     }
 }
 
-export function startOp(type: string, args: any = { url: null, }) {
+export function startOp(type: string, args: any = { url: null }) {
     log.log("StartOp: " + type);
     if (type == "search") {
         if (args.url == "") return;
@@ -1293,7 +1603,10 @@ export function startOp(type: string, args: any = { url: null, }) {
     }
 }
 
-export function moreOp(type: string, args: any = { scaleOp: "add", settingsPage: undefined }) {
+export function moreOp(
+    type: string,
+    args: any = { scaleOp: "add", settingsPage: undefined }
+) {
     log.log("MoreOp: " + type);
     let tab = tabs[curTab];
     if (type == "restart") {
@@ -1316,7 +1629,11 @@ export function moreOp(type: string, args: any = { scaleOp: "add", settingsPage:
         tab.webcontents.setZoomFactor(scale / 100);
         tabMgr.updateScaleValue();
     } else if (type == "settings") {
-        tabMgr.new(com.scheme + "://settings" + ((args.settingsPage) ? ("#" + args.settingsPage) : ("")));
+        tabMgr.new(
+            com.scheme +
+                "://settings" +
+                (args.settingsPage ? "#" + args.settingsPage : "")
+        );
     } else if (type == "close_curtab") {
         tabMgr.close(curTab);
     }
@@ -1354,16 +1671,20 @@ export async function saveHTML() {
     let tab = tabs[curTab];
     if (tab.ready) {
         let filePath = remote.dialog.showSaveDialogSync(com.curWin, {
-            filters: [{
-                name: "Complete page",
-                extensions: ["complete_html", "complete_htm"],
-            }, {
-                name: "Single file",
-                extensions: ["mhtml"],
-            }, {
-                name: "HTML only",
-                extensions: ["html", "htm"],
-            }],
+            filters: [
+                {
+                    name: "Complete page",
+                    extensions: ["complete_html", "complete_htm"],
+                },
+                {
+                    name: "Single file",
+                    extensions: ["mhtml"],
+                },
+                {
+                    name: "HTML only",
+                    extensions: ["html", "htm"],
+                },
+            ],
         });
         if (filePath) {
             notifySaveStarted();
@@ -1397,12 +1718,16 @@ export async function saveHTML() {
                     break;
             }
             try {
-                let file = normalize(dirname(filePath) + "/" + basename(filePath, fileExt) + saveExt);
+                let file = normalize(
+                    dirname(filePath) + "/" + basename(filePath, fileExt) + saveExt
+                );
                 await tab.webcontents.savePage(file, <any>saveType);
                 notifySaveFinished(() => {
                     tabMgr.new(file);
                 });
-            } catch (error) { notifySaveError(error); }
+            } catch (error) {
+                notifySaveError(error);
+            }
         }
     }
 }
@@ -1411,10 +1736,12 @@ export async function savePDF() {
     let tab = tabs[curTab];
     if (tab.ready) {
         let filePath = remote.dialog.showSaveDialogSync(com.curWin, {
-            filters: [{
-                name: "PDF file",
-                extensions: ["pdf"],
-            },],
+            filters: [
+                {
+                    name: "PDF file",
+                    extensions: ["pdf"],
+                },
+            ],
         });
         if (filePath) {
             notifySaveStarted();
@@ -1423,7 +1750,9 @@ export async function savePDF() {
                 notifySaveFinished(() => {
                     tabMgr.new(filePath);
                 });
-            } catch (error) { notifySaveError(error); }
+            } catch (error) {
+                notifySaveError(error);
+            }
         }
     }
 }
@@ -1463,10 +1792,19 @@ export function siteOp(type: string) {
         let data: Array<string> = [""];
         while (true) {
             if (cert) {
-                data.push("-----BEGIN CERTIFICATE-----\n" + Buffer.from(cert.raw).toString("base64") + "\n-----END CERTIFICATE-----");
+                data.push(
+                    "-----BEGIN CERTIFICATE-----\n" +
+                        Buffer.from(cert.raw).toString("base64") +
+                        "\n-----END CERTIFICATE-----"
+                );
                 cert = cert.issuerCertificate;
             } else {
-                let path = normalize(remote.app.getPath("temp") + "/platinum.x509cert.{" + randomUUID() + "}.cer");
+                let path = normalize(
+                    remote.app.getPath("temp") +
+                        "/platinum.x509cert.{" +
+                        randomUUID() +
+                        "}.cer"
+                );
                 writeFileSync(path, data.join("\n\n"));
                 remote.shell.openPath(path);
                 break;
@@ -1475,7 +1813,7 @@ export function siteOp(type: string) {
     }
 }
 
-export function pageOp(type: string, args: any = { url: null, force: false, }) {
+export function pageOp(type: string, args: any = { url: null, force: false }) {
     log.log("PageOp: " + type);
     let tab = tabs[curTab];
     tab.webview.focus();
@@ -1494,9 +1832,18 @@ export function pageOp(type: string, args: any = { url: null, force: false, }) {
     } else if (type == "nav_history") {
         tabMgr.new(com.scheme + "://history");
     } else if (type == "nav_siteinfo") {
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#menu_siteinfo_security_safe"), tab.securityStatus == "safe");
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#menu_siteinfo_security_unsafe"), tab.securityStatus == "unsafe");
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#menu_siteinfo_security_cert"), tab.securityX509Cert != undefined);
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#menu_siteinfo_security_safe"),
+            tab.securityStatus == "safe"
+        );
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#menu_siteinfo_security_unsafe"),
+            tab.securityStatus == "unsafe"
+        );
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#menu_siteinfo_security_cert"),
+            tab.securityX509Cert != undefined
+        );
         siteInfoMenu.showMenuUnderElement(".siteinfo_btn:not(.hide)");
     } else if (type == "nav_jump") {
         urlBarChangeable = true;
@@ -1550,12 +1897,12 @@ export function pageOp(type: string, args: any = { url: null, force: false, }) {
         if (tab.ready) remote.clipboard.writeText(pageMenuParam.srcURL);
     } else if (type == "dev_source") {
         let url = tab.webcontents.getURL();
-        if (!url.startsWith("view-source:"))
-            tabMgr.new("view-source:" + url);
+        if (!url.startsWith("view-source:")) tabMgr.new("view-source:" + url);
     } else if (type == "dev_inspect" || type == "dev_tools") {
         if (tab.ready) {
             tab.webcontents.openDevTools();
-            if (type == "dev_inspect" && pageMenuParam) tab.webcontents.inspectElement(pageMenuParam.x, pageMenuParam.y);
+            if (type == "dev_inspect" && pageMenuParam)
+                tab.webcontents.inspectElement(pageMenuParam.x, pageMenuParam.y);
         }
     }
     pageMenuParam = null;
@@ -1580,9 +1927,15 @@ export function editOp(type: string) {
 }
 
 export function reloadTitlebar() {
-    let isBlur = com.store.get("appearance.visual.blur") as boolean && isBlurSupported;
-    let useBackDrop = com.store.get("appearance.visual.usebackdrop") as boolean && isBlur && isBackdropSupported;
-    com.setElementVisible(<HTMLElement>document.querySelector(".title_btns" + macSuffix), !useBackDrop || isFullScreen);
+    let isBlur = (com.store.get("appearance.visual.blur") as boolean) && isBlurSupported;
+    let useBackDrop =
+        (com.store.get("appearance.visual.usebackdrop") as boolean) &&
+        isBlur &&
+        isBackdropSupported;
+    com.setElementVisible(
+        <HTMLElement>document.querySelector(".title_btns" + macSuffix),
+        !useBackDrop || isFullScreen
+    );
 }
 
 export function reloadConfig() {
@@ -1594,33 +1947,45 @@ export function reloadConfig() {
     // loads sortable
     let disableAnimation = com.store.get("appearance.visual.animation") as boolean;
     tabMgr.tabSwap = new sortable(tabMgr.tabContainer, {
-        animation: (disableAnimation) ? 0 : 100,
-        easing: (disableAnimation) ? null : "linear",
+        animation: disableAnimation ? 0 : 100,
+        easing: disableAnimation ? null : "linear",
     });
     favMgr.favSwap = new sortable(favMgr.favContainer, {
-        animation: (disableAnimation) ? 0 : 100,
-        easing: (disableAnimation) ? null : "linear",
+        animation: disableAnimation ? 0 : 100,
+        easing: disableAnimation ? null : "linear",
         onUpdate: (event) => {
             favMgr.favourite.sort(null, event.oldIndex, event.newIndex);
         },
     });
     favMgr.favFolderSwap = new sortable(favMgr.favFolderContainer, {
-        animation: (disableAnimation) ? 0 : 100,
-        easing: (disableAnimation) ? null : "linear",
+        animation: disableAnimation ? 0 : 100,
+        easing: disableAnimation ? null : "linear",
         onUpdate: (event) => {
             favMgr.favourite.sort(favFolderMenuRoot, event.oldIndex, event.newIndex);
         },
     });
     // shows or hides home button
-    (<HTMLElement>document.querySelector("#nav_home")).style.display = (com.store.get("home.button.show") as boolean) ? "block" : "none";
+    (<HTMLElement>document.querySelector("#nav_home")).style.display = (com.store.get(
+        "home.button.show"
+    ) as boolean)
+        ? "block"
+        : "none";
     // blur effect
-    let isBlur = com.store.get("appearance.visual.blur") as boolean && isBlurSupported;
-    let useBackDrop = com.store.get("appearance.visual.usebackdrop") as boolean && isBlur && isBackdropSupported;
-    let isFullBlur = (com.store.get("appearance.visual.fullblur") as boolean && isBlur) || useBackDrop;
+    let isBlur = (com.store.get("appearance.visual.blur") as boolean) && isBlurSupported;
+    let useBackDrop =
+        (com.store.get("appearance.visual.usebackdrop") as boolean) &&
+        isBlur &&
+        isBackdropSupported;
+    let isFullBlur =
+        ((com.store.get("appearance.visual.fullblur") as boolean) && isBlur) ||
+        useBackDrop;
 
     if (process.platform == "win32") {
         acrylic.setEnabled(isBlur && !useBackDrop);
-        com.addStyleSheet((isFullBlur) ? "*,*::before,*::after{--app-background:transparent;}" : null, "com_style_visual_fullblur");
+        com.addStyleSheet(
+            isFullBlur ? "*,*::before,*::after{--app-background:transparent;}" : null,
+            "com_style_visual_fullblur"
+        );
     }
     if (!useBackDrop) document.body.classList.add("no_backdrop");
     else document.body.classList.remove("no_backdrop");
@@ -1628,15 +1993,16 @@ export function reloadConfig() {
     (<HTMLElement>document.querySelector(".title_btns_min" + macSuffix)).onclick = () => {
         if (isFullScreen) setTaskbarVisibility(true);
         com.curWin.minimize();
-    }
+    };
     (<HTMLElement>document.querySelector(".title_btns_max" + macSuffix)).onclick = () => {
         if (isFullScreen) setFullScreen();
         else if (com.curWin.isMaximized()) com.curWin.restore();
         else com.curWin.maximize();
-    }
-    (<HTMLElement>document.querySelector(".title_btns_close" + macSuffix)).onclick = () => {
-        com.curWin.close();
-    }
+    };
+    (<HTMLElement>document.querySelector(".title_btns_close" + macSuffix)).onclick =
+        () => {
+            com.curWin.close();
+        };
     reloadTitlebar();
     if (process.platform == "win32" && verLte("10.0.22000", osRelease())) {
         // is Windows 11
@@ -1680,10 +2046,7 @@ export function sendBroadcast(channel: string, args?: any) {
 
 export function relaunch(global: boolean) {
     setTaskbarVisibility(true);
-    if (!global) {
-        remote.app.relaunch();
-        remote.app.exit();
-    } else ipcRenderer.sendSync("relaunch-manager");
+    ipcRenderer.sendSync("relaunch", global);
 }
 
 function rmDir(dir: string) {
@@ -1691,9 +2054,14 @@ function rmDir(dir: string) {
     files.forEach((file) => {
         var filePath = join(dir, file);
         if (statSync(filePath).isDirectory()) rmDir(filePath);
-        else try { rmSync(filePath); } catch { }
+        else
+            try {
+                rmSync(filePath);
+            } catch {}
     });
-    try { rmdirSync(dir); } catch { }
+    try {
+        rmdirSync(dir);
+    } catch {}
 }
 
 export let update = remote.getGlobal("updateStatus") as Browser.UpdateStatus;
@@ -1707,7 +2075,11 @@ ipcRenderer.on("accent-color-changed", () => sendBroadcast("accent-color-changed
 ipcRenderer.on("close", () => close(false));
 
 export async function close(force: boolean = false) {
-    if (!force && com.store.get("appearance.behavior.askmulti") as boolean && tabs.length > 1) {
+    if (
+        !force &&
+        (com.store.get("appearance.behavior.askmulti") as boolean) &&
+        tabs.length > 1
+    ) {
         let ret = await dialog({
             title: lang.get("closeall_title"),
         });
@@ -1744,13 +2116,14 @@ function keyPress(event, input: Electron.Input) {
         } else if (inputStr == "Ctrl+R" || inputStr == "F5") {
             pageOp("nav_refresh");
         } else if (inputStr == "Ctrl+F5") {
-            pageOp("nav_refresh", { force: true, });
+            pageOp("nav_refresh", { force: true });
         } else if (inputStr == "ESCAPE") {
             let urlElement = <HTMLInputElement>document.querySelector(".nav_url_input");
             if (document.activeElement == urlElement) {
                 let tab = tabs[curTab];
                 urlBarChangeable = true;
-                if (tab.ready) tabMgr.updateNavURL(tabMgr.encodeURL(tab.webcontents.getURL()));
+                if (tab.ready)
+                    tabMgr.updateNavURL(tabMgr.encodeURL(tab.webcontents.getURL()));
                 else tabMgr.updateNavURL("");
             } else {
                 pageOp("nav_stop");
@@ -1782,7 +2155,7 @@ function keyPress(event, input: Electron.Input) {
         } else if (inputStr == "Ctrl+S") {
             saveHTML();
         } else if (inputStr == "Ctrl+Shift+N") {
-            moreOp("open_window", { guest: true, });
+            moreOp("open_window", { guest: true });
         }
 }
 
@@ -1793,7 +2166,8 @@ async function startup() {
     // init guest mode
     if (browserOptions.guest) {
         logger.transports.file.level = false;
-        (<HTMLElement>document.querySelector("#menu_more_open_window")).style.display = "none";
+        (<HTMLElement>document.querySelector("#menu_more_open_window")).style.display =
+            "none";
         log.log("Browser: You are now in Guest Mode, session " + curSession);
     }
 
@@ -1802,7 +2176,9 @@ async function startup() {
     favMgr = new FavouriteManager();
     com.store.on("change", () => reloadConfig());
     com.store.on("change-internal-notify", () => sendBroadcast("store-update"));
-    com.globalStore.on("change-internal-notify", () => sendBroadcast("global-store-update"));
+    com.globalStore.on("change-internal-notify", () =>
+        sendBroadcast("global-store-update")
+    );
     reloadConfig();
     if (!browserOptions.guest) await db.loadDB(curSession);
     downloader.init(logger);
@@ -1958,15 +2334,18 @@ ipcRenderer.on("certificate-error", (event, id: number, error: string) => {
     }
 });
 
-ipcRenderer.on("load", async (event, options: Browser.BrowserOptions, session: string) => {
-    log.log("Browser: Starting browser");
+ipcRenderer.on(
+    "load",
+    async (event, options: Browser.BrowserOptions, session: string) => {
+        log.log("Browser: Starting browser");
 
-    browserOptions = options;
-    curSession = session;
+        browserOptions = options;
+        curSession = session;
 
-    if (isLoaded) await startup();
-    else isInitStartRequested = true;
-});
+        if (isLoaded) await startup();
+        else isInitStartRequested = true;
+    }
+);
 
 window.addEventListener("load", async () => {
     let params = new URLSearchParams(window.location.search.substring(1));
@@ -1974,8 +2353,10 @@ window.addEventListener("load", async () => {
     app = document.querySelector("#app");
 
     let icon = params.get("icon");
-    (<HTMLImageElement>document.querySelector("#splash_logo")).src = "./platinum" + ((icon == "latest") ? ("") : ("_" + icon)) + ".png";
-    (<HTMLElement>document.querySelector("#troubleshoot_version")).innerHTML = lang.encode("Version: " + pkg.version);
+    (<HTMLImageElement>document.querySelector("#splash_logo")).src =
+        "./platinum" + (icon == "latest" ? "" : "_" + icon) + ".png";
+    (<HTMLElement>document.querySelector("#troubleshoot_version")).innerHTML =
+        lang.encode("Version: " + pkg.version);
 
     tabMgr = new TabManager();
 
@@ -2022,12 +2403,15 @@ window.addEventListener("load", async () => {
 
     // replace text instead of adding text when drop
     urlElement.addEventListener("drop", (event) => {
-        if (event.dataTransfer.files.length != 0) urlElement.value = event.dataTransfer.files.item(0).path;
+        if (event.dataTransfer.files.length != 0)
+            urlElement.value = event.dataTransfer.files.item(0).path;
         else urlElement.value = event.dataTransfer.getData("text/plain");
     });
 
     let collapseTimer: NodeJS.Timeout;
-    let topareaCollapsedElement = <HTMLInputElement>document.querySelector("#toparea_collapsed");
+    let topareaCollapsedElement = <HTMLInputElement>(
+        document.querySelector("#toparea_collapsed")
+    );
     topareaCollapsedElement.addEventListener("mouseenter", () => {
         if (collapseTimer) {
             clearTimeout(collapseTimer);
@@ -2038,10 +2422,11 @@ window.addEventListener("load", async () => {
 
     let pagesBoxElement = <HTMLElement>document.querySelector("#pages");
     pagesBoxElement.addEventListener("mouseenter", () => {
-        if (!collapseTimer && isFullScreen) collapseTimer = setTimeout(() => {
-            collapseTimer = null;
-            if (isFullScreen) document.body.classList.remove("fullscreen_show");
-        }, 2000);
+        if (!collapseTimer && isFullScreen)
+            collapseTimer = setTimeout(() => {
+                collapseTimer = null;
+                if (isFullScreen) document.body.classList.remove("fullscreen_show");
+            }, 2000);
     });
 
     // context menu

@@ -1,9 +1,18 @@
 import fetch = require("node-fetch");
 
 async function getData(provider: Browser.FSDownloadProvider, parent = "0", page = 0) {
-    let url = "https://www.123pan.com/api/share/get?Page=1&limit=1000&next=" + page + "&orderBy=share_id&orderDirection=desc&shareKey=" + provider.shareKey + "&SharePwd=" + provider.sharePwd + "&ParentFileId=" + parent;
+    let url =
+        "https://www.123pan.com/api/share/get?Page=1&limit=1000&next=" +
+        page +
+        "&orderBy=share_id&orderDirection=desc&shareKey=" +
+        provider.shareKey +
+        "&SharePwd=" +
+        provider.sharePwd +
+        "&ParentFileId=" +
+        parent;
     let response = await (await fetch(url)).json();
-    if (response["code"] != 0) throw new Error("Request " + url + " failed: " + JSON.stringify(response));
+    if (response["code"] != 0)
+        throw new Error("Request " + url + " failed: " + JSON.stringify(response));
     return response["data"]["InfoList"];
 }
 

@@ -6,8 +6,13 @@ ipcRenderer.on("lang", (event, language: string) => {
 });
 
 ipcRenderer.on("load", (event) => {
-    const blockWidth = 30, blockHeight = 30, xBlocks = 12, yBlocks = 18, dpi = 2;
-    const canvasWidth = blockWidth * xBlocks, canvasHeight = blockHeight * yBlocks;
+    const blockWidth = 30,
+        blockHeight = 30,
+        xBlocks = 12,
+        yBlocks = 18,
+        dpi = 2;
+    const canvasWidth = blockWidth * xBlocks,
+        canvasHeight = blockHeight * yBlocks;
 
     let canvas = <HTMLCanvasElement>document.querySelector(".game");
     canvas.width = (canvasWidth + 1) * dpi;
@@ -17,55 +22,61 @@ ipcRenderer.on("load", (event) => {
     let ctx = canvas.getContext("2d");
     let map: string[][] = [];
 
-    const blocks = [{
-        color: "red",
-        rect: [
-            [1, 1],
-            [1, 1],
-        ],
-    }, {
-        color: "blue",
-        rect: [
-            [1],
-            [1],
-            [1],
-            [1],
-        ],
-    }, {
-        color: "yellow",
-        rect: [
-            [0, 1, 1],
-            [1, 1, 0],
-        ],
-    }, {
-        color: "green",
-        rect: [
-            [1, 1, 0],
-            [0, 1, 1],
-        ],
-    }, {
-        color: "orange",
-        rect: [
-            [1, 0],
-            [1, 0],
-            [1, 1],
-        ],
-    }, {
-        color: "pink",
-        rect: [
-            [0, 1],
-            [0, 1],
-            [1, 1],
-        ],
-    }, {
-        color: "purple",
-        rect: [
-            [0, 1, 0],
-            [1, 1, 1],
-        ],
-    },];
+    const blocks = [
+        {
+            color: "red",
+            rect: [
+                [1, 1],
+                [1, 1],
+            ],
+        },
+        {
+            color: "blue",
+            rect: [[1], [1], [1], [1]],
+        },
+        {
+            color: "yellow",
+            rect: [
+                [0, 1, 1],
+                [1, 1, 0],
+            ],
+        },
+        {
+            color: "green",
+            rect: [
+                [1, 1, 0],
+                [0, 1, 1],
+            ],
+        },
+        {
+            color: "orange",
+            rect: [
+                [1, 0],
+                [1, 0],
+                [1, 1],
+            ],
+        },
+        {
+            color: "pink",
+            rect: [
+                [0, 1],
+                [0, 1],
+                [1, 1],
+            ],
+        },
+        {
+            color: "purple",
+            rect: [
+                [0, 1, 0],
+                [1, 1, 1],
+            ],
+        },
+    ];
 
-    let score = 0, curX = 0, curY = 0, block: { color: any; rect: any; };
+    let score = 0,
+        curX = 0,
+        curY = 0,
+        block: { color: any; rect: any };
 
     function drawBlock(x: number, y: number) {
         ctx.fillStyle = block.color;
@@ -73,7 +84,12 @@ ipcRenderer.on("load", (event) => {
             for (let j = 0; j < block.rect[i].length; j++) {
                 let point = block.rect[i][j];
                 if (point == 1) {
-                    ctx.fillRect((j + x) * blockWidth * dpi, (i + y) * blockHeight * dpi, blockWidth * dpi, blockHeight * dpi);
+                    ctx.fillRect(
+                        (j + x) * blockWidth * dpi,
+                        (i + y) * blockHeight * dpi,
+                        blockWidth * dpi,
+                        blockHeight * dpi
+                    );
                 }
             }
         }
@@ -86,7 +102,12 @@ ipcRenderer.on("load", (event) => {
                 if (color != "") {
                     ctx.lineWidth = 1 * dpi;
                     ctx.fillStyle = color;
-                    ctx.fillRect(j * blockWidth * dpi, i * blockHeight * dpi, blockWidth * dpi, blockHeight * dpi);
+                    ctx.fillRect(
+                        j * blockWidth * dpi,
+                        i * blockHeight * dpi,
+                        blockWidth * dpi,
+                        blockHeight * dpi
+                    );
                 }
             }
         }
@@ -127,7 +148,8 @@ ipcRenderer.on("load", (event) => {
 
             for (let j = 0; j < block.rect[i].length; j++) {
                 let point = block.rect[i][j];
-                if (point == 1 && map[curY + i][curX + j + ((left) ? -1 : 1)] != "") return false;
+                if (point == 1 && map[curY + i][curX + j + (left ? -1 : 1)] != "")
+                    return false;
             }
         }
 
@@ -150,8 +172,23 @@ ipcRenderer.on("load", (event) => {
         drawMap();
         drawBlock(curX, curY);
         drawBackground();
-        drawText(lang.get("tetris_score", [score.toString()]), 28 * dpi, 10 * dpi, 10 * dpi, "left", "top");
-        if (stopped) drawText(lang.get("tetris_gameover"), 28 * dpi, canvasWidth / 2 * dpi, canvasHeight / 2 * dpi, "center", "middle");
+        drawText(
+            lang.get("tetris_score", [score.toString()]),
+            28 * dpi,
+            10 * dpi,
+            10 * dpi,
+            "left",
+            "top"
+        );
+        if (stopped)
+            drawText(
+                lang.get("tetris_gameover"),
+                28 * dpi,
+                (canvasWidth / 2) * dpi,
+                (canvasHeight / 2) * dpi,
+                "center",
+                "middle"
+            );
     }
 
     function land() {
@@ -208,7 +245,14 @@ ipcRenderer.on("load", (event) => {
         }
     }
 
-    function drawText(text: string, fontSize: number, x: number, y: number, align: CanvasTextAlign, baseline: CanvasTextBaseline) {
+    function drawText(
+        text: string,
+        fontSize: number,
+        x: number,
+        y: number,
+        align: CanvasTextAlign,
+        baseline: CanvasTextBaseline
+    ) {
         ctx.fillStyle = "white";
         ctx.textAlign = align;
         ctx.textBaseline = baseline;

@@ -27,16 +27,20 @@ function getElements(id: string) {
         description: <HTMLElement>document.querySelector(prefix + " .media_description"),
         author: <HTMLElement>document.querySelector(prefix + " .media_author"),
         play: <HTMLButtonElement>document.querySelector(prefix + " .media_control_play"),
-        pause: <HTMLButtonElement>document.querySelector(prefix + " .media_control_pause"),
+        pause: <HTMLButtonElement>(
+            document.querySelector(prefix + " .media_control_pause")
+        ),
         pip: <HTMLButtonElement>document.querySelector(prefix + " .media_control_pip"),
-    }
+    };
 }
 
 export async function createItem(tab: Tab, isPlaying: boolean = true) {
     let mid = randomUUID();
     tab.mediaElementID = mid;
     log.log("Media control " + mid + ": Creating, tab: " + tab.id);
-    let mediaItem = <HTMLElement>document.querySelector(".media_item.template").cloneNode(true);
+    let mediaItem = <HTMLElement>(
+        document.querySelector(".media_item.template").cloneNode(true)
+    );
     mediaItem.classList.remove("template");
     mediaItem.id = "media_" + mid;
     mediaContainer.appendChild(mediaItem);
@@ -52,7 +56,7 @@ export async function createItem(tab: Tab, isPlaying: boolean = true) {
         } else {
             com.setElementVisible(element, false);
         }
-    }
+    };
 
     let mediaEle = getElements(mid);
     setElementValue(mediaEle.cover, null);
@@ -80,7 +84,9 @@ export async function createItem(tab: Tab, isPlaying: boolean = true) {
     // shows the button
     com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_media"), true);
 
-    let mediaInfo = await tab.webcontents.executeJavaScript(readFileSync(__dirname + "/mediaInfo.js").toString()) as Browser.MediaInfo;
+    let mediaInfo = (await tab.webcontents.executeJavaScript(
+        readFileSync(__dirname + "/mediaInfo.js").toString()
+    )) as Browser.MediaInfo;
     let urlStruct = parseURL(tab.webcontents.getURL());
     setElementValue(mediaEle.url, urlStruct.host);
     setElementValue(mediaEle.description, mediaInfo.title);
@@ -93,24 +99,41 @@ export async function createItem(tab: Tab, isPlaying: boolean = true) {
             let mime = coverRes.headers.get("Content-Type");
 
             let data = await coverRes.arrayBuffer();
-            let dataBase64 = "data:image/" + mime + ";base64," + Buffer.from(data).toString("base64");
+            let dataBase64 =
+                "data:image/" + mime + ";base64," + Buffer.from(data).toString("base64");
 
             setElementValue(mediaEle.cover, dataBase64);
 
             getPixels(dataBase64, (error, pixels) => {
                 if (error) {
-                    log.error("MediaControl " + mid + ": Failed to parse cover, url: " + mediaInfo.cover + ", mime: " + mime);
+                    log.error(
+                        "MediaControl " +
+                            mid +
+                            ": Failed to parse cover, url: " +
+                            mediaInfo.cover +
+                            ", mime: " +
+                            mime
+                    );
                     return;
                 }
                 let color = com.getImageColorInfo(pixels.data);
                 if (!color.isDark) {
-                    mediaEle.item.style.setProperty("--var-media-background", "var(--media-background)");
+                    mediaEle.item.style.setProperty(
+                        "--var-media-background",
+                        "var(--media-background)"
+                    );
                     mediaEle.item.style.setProperty("--var-media-color", color.rgba);
                     mediaEle.item.style.setProperty("--var-media-sub-color", color.rgba);
                 } else {
                     mediaEle.item.style.setProperty("--var-media-background", color.rgba);
-                    mediaEle.item.style.setProperty("--var-media-color", "var(--media-light-color)");
-                    mediaEle.item.style.setProperty("--var-media-sub-color", "var(--media-light-sub-color)");
+                    mediaEle.item.style.setProperty(
+                        "--var-media-color",
+                        "var(--media-light-color)"
+                    );
+                    mediaEle.item.style.setProperty(
+                        "--var-media-sub-color",
+                        "var(--media-light-sub-color)"
+                    );
                 }
             });
         } else {
@@ -128,7 +151,10 @@ export function removeItem(tab: Tab) {
     controls.splice(controls.indexOf(mid), 1);
     // if there is no media control left, closes the menu and hides the button
     if (controls.length == 0) {
-        com.setElementVisible(<HTMLButtonElement>document.querySelector("#nav_media"), false);
+        com.setElementVisible(
+            <HTMLButtonElement>document.querySelector("#nav_media"),
+            false
+        );
         mediaMenu.hide();
     }
 }
@@ -146,7 +172,12 @@ export async function sendCommand(tab: Tab, command: string) {
     log.log("Media control " + mid + ": Sending command, command: " + command);
     // webcontents must be active to execute js
     tab.wake();
-    await tab.webcontents.executeJavaScript(readFileSync(__dirname + "/mediaControl.js").toString().replace("!<OP>!", command), true);
+    await tab.webcontents.executeJavaScript(
+        readFileSync(__dirname + "/mediaControl.js")
+            .toString()
+            .replace("!<OP>!", command),
+        true
+    );
 }
 
 export function showMenu() {
