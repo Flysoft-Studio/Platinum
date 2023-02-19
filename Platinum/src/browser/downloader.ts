@@ -6,8 +6,7 @@ import { existsSync, rmSync } from "fs";
 import { extname, normalize } from "path";
 import { parse as parseURL } from "url";
 import { ElectronLog, LogFunctions } from "electron-log";
-
-const remote = require("@electron/remote");
+import * as remote from "@electron/remote";
 let log: LogFunctions;
 
 export let downloadMenu: Menu;

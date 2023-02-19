@@ -1,16 +1,16 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
+        "target": "ESNext",
+        "module": "CommonJS",
+        "moduleResolution": "node",
         "sourceMap": false,
-        "outDir": "./build",
-        "experimentalDecorators": true
+        "esModuleInterop": true,
+        "rootDir": "src",
+        "outDir": "build",
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "skipLibCheck": true
     },
-    "include": [
-        "./src"
-    ],
-    "exclude": [
-        "./build",
-        "./node_modules"
-    ]
+    "include": ["src"],
+    "exclude": ["build", "node_modules"]
 }

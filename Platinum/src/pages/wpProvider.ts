@@ -1,18 +1,7 @@
 import * as com from "../common/common";
 import { normalize } from "path";
-const remote = require("@electron/remote");
-
-async function fetchWallpaper(url: string, mime?: string) {
-    let res = await fetch(url);
-    return (
-        "data:" +
-        (res.headers.has("Content-Type")
-            ? res.headers.get("Content-Type")
-            : "image/" + mime) +
-        ";base64," +
-        Buffer.from(await res.arrayBuffer()).toString("base64")
-    );
-}
+import * as remote from "@electron/remote";
+import axios from "axios";
 
 export async function getLocalWallpaper(fileName: string) {
     let filePath =
@@ -20,25 +9,22 @@ export async function getLocalWallpaper(fileName: string) {
             ? normalize(com.getUserFolder(remote.getGlobal("user")) + "/" + fileName)
             : null;
     return {
-        url: await fetchWallpaper(
-            filePath ? encodeURI("file://" + filePath.replace(/\\/g, "/")) : "",
-            "jpeg"
-        ),
+        url: filePath ? encodeURI("file://" + filePath.replace(/\\/g, "/")) : "",
     } as Browser.FSWallpaperProvider;
 }
 
 export async function getURLWallpaper(url: string) {
     return {
-        url: await fetchWallpaper(url == "" ? "" : url, "jpeg"),
+        url: url == "" ? "" : url,
     } as Browser.FSWallpaperProvider;
 }
 
 export async function getBingWallpaper() {
     const prefix = "https://bing.com";
-    let data = (await (await fetch(prefix + "/HPImageArchive.aspx?format=js&n=1")).json())
+    let data = (await axios.get(prefix + "/HPImageArchive.aspx?format=js&n=1")).data
         .images[0];
     return {
-        url: await fetchWallpaper(prefix + data.url, "jpeg"),
+        url: prefix + data.url,
         title: data.title,
         copyright: data.copyright,
         copyrightUrl: data.copyrightlink,
@@ -46,13 +32,7 @@ export async function getBingWallpaper() {
 }
 
 export async function getUnsplashWallpaper() {
-    const prefix = "https://picsum.photos";
-    let res = await fetch(prefix + "/1920/1080?random");
-    let id = res.headers.get("Picsum-ID");
-    let data = await (await fetch(prefix + "/id/" + id + "/info")).json();
     return {
-        url: await fetchWallpaper(data.download_url, "jpeg"),
-        copyright: data.author,
-        copyrightUrl: data.url,
+        url: "https://picsum.photos/1920/1080?random",
     } as Browser.FSWallpaperProvider;
 }

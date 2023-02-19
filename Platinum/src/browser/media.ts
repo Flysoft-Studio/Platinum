@@ -6,7 +6,8 @@ import { randomUUID } from "crypto";
 import { ElectronLog, LogFunctions } from "electron-log";
 import { readFileSync } from "fs";
 import { parse as parseURL } from "url";
-import getPixels = require("get-pixels-updated");
+import pixels from "@cronvel/get-pixels";
+import axios from "axios";
 
 let log: LogFunctions;
 
@@ -93,18 +94,17 @@ export async function createItem(tab: Tab, isPlaying: boolean = true) {
     setElementValue(mediaEle.author, mediaInfo.author);
     setElementValue(mediaEle.cover, null);
     if (mediaInfo.cover) {
-        let coverRes = await fetch(mediaInfo.cover);
-        if (coverRes.headers.has("Content-Type")) {
+        let coverRes = await axios.get(mediaInfo.cover);
+        if (coverRes.headers["Content-Type"]) {
             // valid image
-            let mime = coverRes.headers.get("Content-Type");
+            let mime = coverRes.headers["Content-Type"].toString();
 
-            let data = await coverRes.arrayBuffer();
-            let dataBase64 =
-                "data:image/" + mime + ";base64," + Buffer.from(data).toString("base64");
+            let raw = Buffer.from(coverRes.data);
+            let dataBase64 = "data:image/" + mime + ";base64," + raw.toString("base64");
 
             setElementValue(mediaEle.cover, dataBase64);
 
-            getPixels(dataBase64, (error, pixels) => {
+            pixels(raw, mime.replace("image/", "") as any, (error, pixels) => {
                 if (error) {
                     log.error(
                         "MediaControl " +

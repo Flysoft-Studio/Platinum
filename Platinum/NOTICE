@@ -1,3 +1,0 @@
-我在此项目中使用了 @electron/remote 模块，但是由于此模块年久失修，所以有一些奇怪的问题，在此进行记录。
-
-remote.getGlobal("XXX") 可以获取主进程定义的全局对象，可以通过 remote.getGlobal("XXX")["XXX"] 进行读取。但是 remote.getGlobal("XXX")["XXX"] = "XXX" 只能对存在的属性进行赋值，对全局对象里没有的属性进行赋值不会应用到远程的对象中。

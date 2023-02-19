@@ -9,8 +9,8 @@ import { randomUUID } from "crypto";
 import { copyFileSync } from "fs-extra";
 import { extname, normalize } from "path";
 import { deserialize, serialize } from "v8";
+import * as remote from "@electron/remote";
 
-const remote = require("@electron/remote");
 let log: LogFunctions;
 
 export let userMenu: Menu;
@@ -101,10 +101,10 @@ export function editUser() {
     return new Promise<boolean>((resolve) => {
         userEditIcon.onclick = () => {
             let file = remote.dialog.showOpenDialogSync(com.curWin, {
+                properties: ["openFile"],
                 filters: [
                     {
                         name: "Image file",
-                        properties: ["openFile"],
                         extensions: ["gif", "jpg", "jpeg", "png", "svg", "webp"],
                     },
                 ],

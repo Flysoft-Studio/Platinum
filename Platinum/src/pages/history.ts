@@ -4,7 +4,7 @@ import * as lang from "../common/language";
 import * as sidebar from "../common/sidebar";
 import * as com from "../common/common";
 import { registerRipples } from "../common/ripple";
-const remote = require("@electron/remote");
+import * as remote from "@electron/remote";
 
 let selectedItems: Array<number> = [];
 

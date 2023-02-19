@@ -6,8 +6,8 @@ import { lte as verLte } from "semver";
 import { release as osRelease } from "os";
 import { ipcRenderer } from "electron";
 import { join, normalize } from "path";
-import rgba = require("color-rgba");
-const remote = require("@electron/remote");
+import rgba from "color-rgba";
+import * as remote from "@electron/remote";
 export let store: Store;
 export let globalStore: Store;
 
@@ -29,6 +29,7 @@ export function reloadTColor() {
     else tcolor = store.get("appearance.tcolor.custom") as string;
     if (tcolor) {
         let [r, g, b, alpha] = rgba(tcolor);
+        alpha = 1;
 
         // makes it brighter
         const brighterValue = remote.nativeTheme.shouldUseDarkColors ? 100 : 20;
@@ -140,7 +141,10 @@ export function registerEvents() {
     curWin = remote.getCurrentWindow();
     store = new Store(
         normalize(remote.getGlobal("dataDir") + "/config.json"),
-        getDefaultOptions(remote.getGlobal("user"), remote),
+        getDefaultOptions(
+            remote.getGlobal("user"),
+            remote as unknown as typeof Electron.CrossProcessExports
+        ),
         "store-update"
     );
     globalStore = new Store(
@@ -218,7 +222,7 @@ export function showTip(title: string) {
         },
     } as Electron.BrowserWindowConstructorOptions);
     tip.setIgnoreMouseEvents(true);
-    tip.loadURL("file://" + __dirname + "/../../tip.html");
+    tip.loadFile(__dirname + "/../../pages/internal-tip.html");
     tip.webContents.on("dom-ready", () => {
         tip.focus();
         tip.webContents.send("tip", title);

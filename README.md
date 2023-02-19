@@ -1,36 +1,34 @@
 # Platinum
 
-本项目处于非活跃状态。
-此说明文件仅供参考。
-也可参考`编译构建调试指南.rtf`。
+[中文](README.zh.md) | [English](README.md)
 
-### 构建工具 (安装方法)
+### Build tools
 
--   NodeJS 16 ([https://nodejs.org](https://nodejs.org))
--   TypeScript compiler (运行 npm i tsc -g)
--   Docker for Windows (可选，如需要在 Windows 上构建 Linux 版需要此工具，需要把 package.json 后面的 c3e320779ef856d314f6443933aaa836000b0b7da4819d91a700692649f244bc 改成自己的容器 id，暂时不提供支持)
--   Advanced Installer 19.1 (可选，如需要在 Windows 上构建 UWP 版需要此工具，暂时不提供支持)
+-   [NodeJS 16.x-18.x](https://nodejs.org)
+-   [pnpm package manager](https://pnpm.io)
+-   [Advanced Installer 20.2](https://advancedinstaller.com)
 
-### 安装依赖
+> ⚠️ Advanced Installer is a **commercial** software. Only required if you want to build UWP package on Windows.
 
-请在 Platinum 目录下执行
+**All of the commands are executed under `Platinum` folder!**
+
+### Installing dependencies
 
 ```powershell
-npm i
+pnpm install
 ```
 
-### 调试
-
-请在 Platinum 目录下执行
+### Debugging
 
 ```powershell
-npx electron .
+# You can also add `--enable-browser-logging --dev` for inspecting
+pnpm dev
 ```
 
-### 构建
-
-请在 Platinum 目录下执行
+### Building
 
 ```powershell
-npm run compile:win&&npm run build:win
+pnpm build
+# Build UWP package
+# pnpm build:uwp
 ```

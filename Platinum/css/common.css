@@ -17,6 +17,7 @@
 *,
 *::before,
 *::after {
+    --fullscreen-background: rgb(233, 233, 233);
     --cubic-bezier: cubic-bezier(0.65, 0.05, 0.1, 1);
     --cubic-bezier-smooth: ease;
     --title-height: 42px;
@@ -682,7 +683,7 @@ body {
 }
 
 .user_tips_syncing > *:nth-child(1) {
-    animation: rotate 1s linear infinite;
+    animation: rotate 2s linear infinite;
 }
 
 @keyframes rotate {
@@ -691,7 +692,7 @@ body {
     }
 
     100% {
-        transform: rotate(180deg);
+        transform: rotate(360deg);
     }
 }
 
@@ -814,6 +815,7 @@ body {
     *,
     *::before,
     *::after {
+        --fullscreen-background: rgb(48, 48, 48);
         --nav-user-background: rgba(255, 255, 255, 0.3);
         --color-img: linear-gradient(to right, #fff 0%, #fff 70%, transparent 100%);
         --tab-background: rgba(255, 255, 255, 0.15);
@@ -862,6 +864,7 @@ body {
     *,
     *::before,
     *::after {
+        --fullscreen-background: ButtonFace;
         --nav-user-background: transparent;
         --title-height: 48px;
         --color-cl: var(--button-color);

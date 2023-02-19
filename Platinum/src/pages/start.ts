@@ -8,6 +8,7 @@ import {
 } from "./wpProvider";
 import { ipcRenderer } from "electron";
 import { loadSVGs } from "../common/svgLoader";
+import axios from "axios";
 
 ipcRenderer.on("lang", (event, language: string) => {
     lang.reload(language);
@@ -17,40 +18,40 @@ ipcRenderer.on("load", async () => {
     com.registerEvents();
     loadSVGs();
 
-    try {
-        const widgetObjName = "SeniverseWeatherWidget";
-        window["SeniverseWeatherWidgetObject"] = widgetObjName;
-        window[widgetObjName] = function () {
-            (window[widgetObjName].q = window[widgetObjName].q || []).push(arguments);
-        };
-        window[widgetObjName].l = +new Date();
-        let ele = document.createElement("script");
-        ele.innerText = (
-            await (
-                await fetch(
+    if (com.store.get("home.start.weather") == true) {
+        try {
+            const widgetObjName = "SeniverseWeatherWidget";
+            window["SeniverseWeatherWidgetObject"] = widgetObjName;
+            window[widgetObjName] = function () {
+                (window[widgetObjName].q = window[widgetObjName].q || []).push(arguments);
+            };
+            window[widgetObjName].l = +new Date();
+            let ele = document.createElement("script");
+            ele.innerText = (
+                await axios.get(
                     "https://cdn.sencdn.com/widget2/static/js/bundle.js?t=" +
                         parseInt((new Date().getTime() / 100000000).toString())
                 )
-            ).text()
-        )
-            .replace("//widget-v3.seniverse.com", "https://widget-v3.seniverse.com")
-            .replace("//cdn.sencdn.com", "https://cdn.sencdn.com")
-            .replace("//seniverse.com", "https://seniverse.com")
-            .replace("//m.seniverse.com", "https://m.seniverse.com");
-        document.head.appendChild(ele);
-        window[widgetObjName]("show", {
-            flavor: "bubble",
-            location: "WX4FBXXFKE4F",
-            geolocation: true,
-            language: "auto",
-            unit: "c",
-            theme: "dark",
-            token: "caef0015-412b-4a98-9706-e160a1cd0777",
-            hover: "enabled",
-            container: "tp-weather-widget",
-        });
-    } catch {
-        console.error("load weather failed");
+            ).data
+                .replace("//widget-v3.seniverse.com", "https://widget-v3.seniverse.com")
+                .replace("//cdn.sencdn.com", "https://cdn.sencdn.com")
+                .replace("//seniverse.com", "https://seniverse.com")
+                .replace("//m.seniverse.com", "https://m.seniverse.com");
+            document.head.appendChild(ele);
+            window[widgetObjName]("show", {
+                flavor: "bubble",
+                location: "WX4FBXXFKE4F",
+                geolocation: true,
+                language: "auto",
+                unit: "c",
+                theme: "dark",
+                token: "caef0015-412b-4a98-9706-e160a1cd0777",
+                hover: "enabled",
+                container: "tp-weather-widget",
+            });
+        } catch {
+            console.error("load weather failed");
+        }
     }
 
     let searchElement = <HTMLInputElement>document.querySelector("#search>input");
@@ -83,12 +84,11 @@ ipcRenderer.on("load", async () => {
     requestAnimationFrame(() => {
         timeElement.style.opacity = "1";
     });
-    let bgElement = <HTMLElement>document.querySelector(".startbg>div");
+    let bgElement = <HTMLImageElement>document.querySelector(".startbg");
     if (com.store.get("home.start.background.blur") as boolean)
         bgElement.classList.add("startbg_blur");
     let wpProvider: Browser.FSWallpaperProvider;
     let wpSource = com.store.get("home.start.background.uses") as string;
-    let wpString: string;
     if (wpSource == "unsplash") wpProvider = await getUnsplashWallpaper();
     else if (wpSource == "bing") wpProvider = await getBingWallpaper();
     else if (wpSource == "url")
@@ -99,7 +99,8 @@ ipcRenderer.on("load", async () => {
         wpProvider = await getLocalWallpaper(
             com.store.get("home.start.background.file") as string
         );
-    if (wpProvider) wpString = "url(" + wpProvider.url + ")";
-    bgElement.style.backgroundImage = wpString ? wpString : "none";
-    bgElement.style.opacity = "1";
+    bgElement.src = wpProvider ? wpProvider.url : "";
+    bgElement.addEventListener("load", () => {
+        bgElement.style.opacity = "1";
+    });
 });

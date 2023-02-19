@@ -11,7 +11,10 @@ import { Menu } from "../common/menu";
 import { Dialog } from "../common/dialog";
 import { Favourite } from "../common/favourite";
 import { isBackdropSupported, isBlurSupported } from "../platform/win32";
-import * as sortable from "sortablejs";
+import { loadSVGs } from "../common/svgLoader";
+import { registerRipple, registerRipples } from "../common/ripple";
+import Sortable from "sortablejs";
+import axios from "axios";
 import { create as createLogger } from "electron-log";
 import { ipcRenderer } from "electron";
 import { parse as parseURL, format as formatURL } from "url";
@@ -23,20 +26,17 @@ import {
     rmSync,
     statSync,
     writeFileSync,
-} from "fs";
+} from "fs-extra";
 import { basename, dirname, extname, join, normalize, resolve } from "path";
 import { release as osRelease } from "os";
 import { lte as verLte } from "semver";
 import { connect as tlsConnect } from "tls";
 import { randomUUID, X509Certificate } from "crypto";
-import { loadSVGs } from "../common/svgLoader";
-import { registerRipple, registerRipples } from "../common/ripple";
-import fetch = require("node-fetch");
+import pkg from "../common/package";
+import * as remote from "@electron/remote";
 
 process.noDeprecation = true;
 
-const pkg = require("../../package.json");
-const remote = require("@electron/remote");
 const logger = createLogger("renderer");
 let level = remote.getGlobal("logLevel");
 logger.transports.console.level = level;
@@ -279,7 +279,7 @@ class TabManager {
     public tabBox: HTMLElement;
     public tabNew: HTMLElement;
     public pagePlaceholder: HTMLElement;
-    public tabSwap: sortable;
+    public tabSwap: Sortable;
     public reloadTabStyleTimer: NodeJS.Timeout;
     constructor() {
         this.tabBox = <HTMLElement>document.querySelector(".title_tabbox");
@@ -289,7 +289,6 @@ class TabManager {
     }
     public updateNavURL(url: string) {
         if (!urlBarChangeable) return;
-        let tab = tabs[curTab];
         (<HTMLInputElement>document.querySelector(".nav_url_input")).value =
             this.encodeURL(url);
     }
@@ -459,10 +458,13 @@ class TabManager {
         // update zoom factor in more menu
         if (curTab == id) this.updateScaleValue();
         // remove existing media control
-        if (tab.mediaElementID) mediactrl.removeItem(tab);
+        if (tab.mediaElementID) {
+            mediactrl.removeItem(tab);
+            tab.mediaElementID = undefined;
+        }
         if (!isInPage) {
             if (id == curTab) this.updateLoadingStatus(true);
-            tabEle.icon.src = "./img/browser/tab/tab.svg";
+            tabEle.icon.src = "../img/browser/tab/tab.svg";
             tabEle.icon.style.display = "none";
             tabEle.loading.style.display = "block";
             tab.icon = null;
@@ -731,7 +733,7 @@ class TabManager {
             this.close(tab.id);
         };
         tabEle.icon.onerror = () => {
-            tabEle.icon.src = "./img/browser/tab/tab.svg";
+            tabEle.icon.src = "../img/browser/tab/tab.svg";
         };
 
         tabEle.icon.style.display = "none";
@@ -828,7 +830,9 @@ class TabManager {
                     await tab.webcontents.executeJavaScript(
                         "document.querySelector('html').lang='en';window.platinum.needCompatible=false;document.querySelector('html').innerHTML=atob('" +
                             Buffer.from(
-                                readFileSync(__dirname + "/../../error.html")
+                                readFileSync(
+                                    __dirname + "/../../pages/internal-error.html"
+                                )
                                     .toString()
                                     .replace(
                                         "/*!<CSS>!*/",
@@ -906,11 +910,11 @@ class TabManager {
                     for (let i = 0; i < favicons.length; i++) {
                         if (favicons[i].indexOf(".svg") != -1) icon = favicons[i];
                     }
-                    let iconRes = await fetch(icon);
-                    if (iconRes.headers.has("Content-Type")) {
-                        let mime = iconRes.headers.get("Content-Type");
+                    let response = await axios.get(icon, { responseType: "arraybuffer" });
+                    if (response.headers["Content-Type"]) {
+                        let mime = response.headers["Content-Type"];
 
-                        let data = await iconRes.arrayBuffer();
+                        let data = await response.data;
                         let dataBase64 =
                             "data:image/" +
                             mime +
@@ -1130,8 +1134,8 @@ class FavouriteManager {
     public favContainer: HTMLElement;
     public favFolderContainer: HTMLElement;
     public favMoveContainer: HTMLElement;
-    public favSwap: sortable;
-    public favFolderSwap: sortable;
+    public favSwap: Sortable;
+    public favFolderSwap: Sortable;
     constructor() {
         this.favourite = new Favourite(
             com.store,
@@ -1216,9 +1220,9 @@ class FavouriteManager {
                 if (data.type == 0) {
                     favEle.icon.src = data.page.icon
                         ? data.page.icon
-                        : "./img/browser/tab/tab.svg";
+                        : "../img/browser/tab/tab.svg";
                     favEle.icon.addEventListener("error", () => {
-                        favEle.icon.src = "./img/browser/tab/tab.svg";
+                        favEle.icon.src = "../img/browser/tab/tab.svg";
                     });
                     clickEventHandler = () => {
                         tabMgr.new(data.page.url);
@@ -1226,7 +1230,7 @@ class FavouriteManager {
                     favEle.item.title = data.title + "\n" + data.page.url;
                     sections.push("open", "move");
                 } else if (data.type == 1) {
-                    favEle.icon.src = "./img/browser/favourite/folder.svg";
+                    favEle.icon.src = "../img/browser/favourite/folder.svg";
                     clickEventHandler = () => {
                         let rect = favEle.item.getBoundingClientRect();
                         favItemMenuRoot = data.folder.children;
@@ -1290,7 +1294,7 @@ class FavouriteManager {
             if (data.type == 0) {
                 favEle.icon.src = data.page.icon
                     ? data.page.icon
-                    : "./img/browser/tab/tab.svg";
+                    : "../img/browser/tab/tab.svg";
                 favEle.item.addEventListener("click", () => {
                     tabMgr.new(data.page.url);
                 });
@@ -1302,7 +1306,7 @@ class FavouriteManager {
                 });
                 favEle.item.title = data.title + "\n" + data.page.url;
             } else if (data.type == 1) {
-                favEle.icon.src = "./img/browser/favourite/folder.svg";
+                favEle.icon.src = "../img/browser/favourite/folder.svg";
                 favEle.item.title = data.title;
             }
         }
@@ -1611,6 +1615,8 @@ export function moreOp(
     let tab = tabs[curTab];
     if (type == "restart") {
         relaunch(false);
+    } else if (type == "quit") {
+        quit(false);
     } else if (type == "scale") {
         let scale;
         if (tab.ready) scale = Math.round(tab.webcontents.getZoomFactor() * 100);
@@ -1946,18 +1952,18 @@ export function reloadConfig() {
     sendBroadcast("lang", langLocale);
     // loads sortable
     let disableAnimation = com.store.get("appearance.visual.animation") as boolean;
-    tabMgr.tabSwap = new sortable(tabMgr.tabContainer, {
+    tabMgr.tabSwap = new Sortable(tabMgr.tabContainer, {
         animation: disableAnimation ? 0 : 100,
         easing: disableAnimation ? null : "linear",
     });
-    favMgr.favSwap = new sortable(favMgr.favContainer, {
+    favMgr.favSwap = new Sortable(favMgr.favContainer, {
         animation: disableAnimation ? 0 : 100,
         easing: disableAnimation ? null : "linear",
         onUpdate: (event) => {
             favMgr.favourite.sort(null, event.oldIndex, event.newIndex);
         },
     });
-    favMgr.favFolderSwap = new sortable(favMgr.favFolderContainer, {
+    favMgr.favFolderSwap = new Sortable(favMgr.favFolderContainer, {
         animation: disableAnimation ? 0 : 100,
         easing: disableAnimation ? null : "linear",
         onUpdate: (event) => {
@@ -2047,6 +2053,11 @@ export function sendBroadcast(channel: string, args?: any) {
 export function relaunch(global: boolean) {
     setTaskbarVisibility(true);
     ipcRenderer.sendSync("relaunch", global);
+}
+
+export function quit(global: boolean) {
+    setTaskbarVisibility(true);
+    ipcRenderer.sendSync("quit", global);
 }
 
 function rmDir(dir: string) {
@@ -2186,7 +2197,8 @@ async function startup() {
     user.init(logger);
     qrcode.init(logger);
     acrylic.init(logger);
-    if (process.platform == "win32") win32.init(logger, remote);
+    if (process.platform == "win32")
+        win32.init(logger, remote as unknown as typeof Electron.CrossProcessExports);
 
     // creates menus
     pageMenu = new Menu("page");
@@ -2354,7 +2366,7 @@ window.addEventListener("load", async () => {
 
     let icon = params.get("icon");
     (<HTMLImageElement>document.querySelector("#splash_logo")).src =
-        "./platinum" + (icon == "latest" ? "" : "_" + icon) + ".png";
+        "../platinum" + (icon == "latest" ? "" : "_" + icon) + ".png";
     (<HTMLElement>document.querySelector("#troubleshoot_version")).innerHTML =
         lang.encode("Version: " + pkg.version);
 

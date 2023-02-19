@@ -1,7 +1,7 @@
 import { ipcRenderer } from "electron";
 import * as com from "./common";
 import * as lang from "./language";
-const remote = require("@electron/remote");
+import * as remote from "@electron/remote";
 
 export function registerControls() {
     let controls = document.querySelectorAll(".control");

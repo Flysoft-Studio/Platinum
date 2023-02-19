@@ -1,7 +1,8 @@
 import * as lang from "../common/language";
 import * as win32 from "../platform/win32";
-import { findExecutable } from "../platform/executable";
+import * as downloader from "./downloader";
 import { getDir } from "../common/dir";
+import { getIpcPath } from "../common/ipcPath";
 import { args } from "./args";
 import {
     setUserList,
@@ -17,7 +18,7 @@ import {
 import { Store } from "../common/store";
 import { Favourite } from "../common/favourite";
 import { getDefaultOptions, getMgrDefaultOptions } from "../common/default";
-import {
+import electron, {
     app,
     BrowserWindow,
     Certificate,
@@ -25,7 +26,6 @@ import {
     ipcMain,
     Menu,
     nativeTheme,
-    Notification,
     session,
     systemPreferences,
     webContents,
@@ -33,20 +33,17 @@ import {
 import { create as createLogger } from "electron-log";
 import { ElectronBlocker } from "@cliqz/adblocker-electron";
 import { JSONRPCClient } from "json-rpc-2.0";
-import { basename, dirname, extname, join, normalize, resolve } from "path";
+import { basename, dirname, extname, normalize } from "path";
 import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs-extra";
 import { parse as parseURL } from "url";
-import { spawn } from "child_process";
 import { WebSocket } from "ws";
-import fetch = require("node-fetch");
-import fp = require("find-free-port");
-import electron = require("electron");
-import EventEmitter = require("events");
+import EventEmitter from "events";
+import pkg from "../common/package";
+import * as remote from "@electron/remote/main";
 
 const defaultSession = "persist:user";
-const remote = require("@electron/remote/main");
-const pkg = require("../../package.json");
+
 const dir = getDir(electron);
 const isPreview = pkg.version.indexOf("preview") != -1;
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
@@ -60,20 +57,9 @@ let favourite: Favourite;
 let cachedWindow: Window;
 let lastActiveWindow: Window;
 let adBlocker: ElectronBlocker;
-// makes sure don't download the updates automatically if the update has failed
-let isFirstTryAutoUpdate = true;
 // hosts which may contain cert errors but the user wanted to proceed to
 let ignoreCertErrorHosts: Array<string> = [];
 let sessions: Array<string> = [];
-let downloader: Download.DownloaderInfo = {
-    numActive: 0,
-    active: [],
-    numWaiting: 0,
-    waiting: [],
-    numStopped: 0,
-    stopped: [],
-};
-global.downloader = downloader;
 let users = { object: getUserList() };
 global.users = users;
 let updateStatus = { object: null };
@@ -86,14 +72,14 @@ else if (user == "manager")
     throw Error("You can't login as \"" + user + "\". It's a internal user.");
 if (!users.object[user]) throw Error('User "' + user + '" not exists.');
 
-let serverPort: number = args["server-port"];
-if (!serverPort) throw Error("WebSocket server port not specified.");
+let ipcPath: string = args["named-pipe"];
+if (!ipcPath) throw Error("WebSocket server port not specified.");
 let ws: WebSocket;
 
 initUser(user);
 
 const logger = createLogger("main");
-let level = args["enable-logging"] == true ? undefined : false;
+let level = args["enable-browser-logging"] == true ? undefined : false;
 global.logLevel = level;
 logger.transports.console.level = level;
 logger.transports.ipc.level = false;
@@ -101,6 +87,7 @@ logger.transports.file.level = level;
 logger.transports.file.resolvePath = () => normalize(logDir + "/main.log");
 const log = logger.scope("instance");
 log.log("Starting main process");
+downloader.init(logger);
 
 store = new Store(
     normalize(dataDir + "/config.json"),
@@ -144,7 +131,7 @@ if (
 global.updateStatus = null;
 
 class Window {
-    public browser: BrowserWindow;
+    public browser: electron.BrowserWindow;
     public options: Browser.BrowserOptions;
     public id: number;
     public cached: boolean;
@@ -290,9 +277,12 @@ class Window {
         let icon = isPreview ? "preview" : "latest";
         if (Math.floor(Math.random() * (10 + 1)) == 10) icon = "light";
         // await this.browser.loadURL(((app.isPackaged) ? ("file://" + __dirname + "/../..") : ("http://127.0.0.1:5500")) + "/browser.html?icon=" + icon);
-        await this.browser.webContents.loadFile("browser.html", {
-            query: { icon: icon },
-        });
+        await this.browser.webContents.loadFile(
+            __dirname + "/../../pages/internal-browser.html",
+            {
+                query: { icon: icon },
+            }
+        );
     }
     async startup(options: Browser.BrowserOptions) {
         let sessionPartition: string;
@@ -403,7 +393,7 @@ async function downloadHandler(
     }
 }
 
-function sendBroadcast(channel: string, args1?: any, args2?: any, args3?: any) {
+export function sendBroadcast(channel: string, args1?: any, args2?: any, args3?: any) {
     for (let i = 0; i < browsers.length; i++) {
         const browser = browsers[i];
         if (browser && browser.ready)
@@ -468,7 +458,7 @@ X-GNOME-Autostart-enabled=true
     else deleteLink(users.object[user]);
 }
 
-function getUserFolder() {
+export function getUserFolder() {
     const path = app.getPath("userData") + "/User Data";
     try {
         if (!existsSync(path)) mkdirSync(path);
@@ -491,23 +481,6 @@ async function createWindow(options: Browser.BrowserOptions) {
 async function createCachedWindow() {
     let window = new Window();
     await window.new(true);
-}
-
-function dlDiff(oldList: Array<Download.Item>, newList: Array<Download.Item>) {
-    let added: Array<Download.Item> = [],
-        removed: Array<Download.Item> = [],
-        oldIDList = [],
-        newIDList = [];
-    // extracts gids
-    for (let i = 0; i < oldList.length; i++) oldIDList.push(oldList[i].gid);
-    for (let i = 0; i < newList.length; i++) newIDList.push(newList[i].gid);
-    // finds gids those are only in old list (removed)
-    for (let i = 0; i < oldIDList.length; i++)
-        if (!newIDList.includes(oldIDList[i])) removed.push(oldList[i]);
-    // finds gids those are only in new list (added)
-    for (let i = 0; i < newIDList.length; i++)
-        if (!oldIDList.includes(newIDList[i])) added.push(newList[i]);
-    return { added, removed };
 }
 
 app.commandLine.appendSwitch("enable-transparent-visuals");
@@ -631,6 +604,17 @@ app.on("ready", async () => {
         ws.send(
             JSON.stringify({
                 id: global ? "relaunch" : "relaunch-user",
+                data: {
+                    user: user,
+                } as Manager.DataPackageIBase,
+            } as Manager.DataPackageI)
+        );
+        event.returnValue = null;
+    });
+    ipcMain.on("quit", (event, global: boolean) => {
+        ws.send(
+            JSON.stringify({
+                id: global ? "quit" : "quit-user",
                 data: {
                     user: user,
                 } as Manager.DataPackageIBase,
@@ -843,161 +827,8 @@ app.on("ready", async () => {
 
     // });
 
-    //adBlocker = await ElectronBlocker.parse(await (await fetch("https://easylist.to/easylist/easylist.txt")).text());
-
-    // finds a free port for Aria2
-    fp(8000, (error, port: number) => {
-        if (error) {
-            log.error("Aria2 error: Cannot find a free port for Aria2, reason: " + error);
-            return;
-        }
-        global.dlPort = port;
-        log.log("Aria2 info: Starting, port: " + global.dlPort);
-        try {
-            // sets default
-            let confFile = normalize(getUserFolder() + "/aria2.conf");
-            if (!existsSync(confFile)) {
-                let defaultConf = readFileSync(
-                    normalize(dir.asarDirname + "/engine/aria2_default.conf")
-                ).toString();
-                writeFileSync(confFile, defaultConf);
-                log.log("Aria2 info: Config file generated: " + confFile);
-            }
-            let sessionFile = normalize(getUserFolder() + "/aria2.session");
-            if (!existsSync(sessionFile)) {
-                writeFileSync(sessionFile, Buffer.alloc(0));
-            }
-            // aria2 executable file path
-            let executable = findExecutable(dir.asarDirname + "/engine", "aria2c", true);
-            let aria2 = spawn(
-                executable,
-                [
-                    "--conf-path=" + confFile,
-                    "--rpc-listen-port=" + global.dlPort,
-                    "--save-session=" + sessionFile,
-                    "--input-file=" + sessionFile,
-                ],
-                {
-                    shell: false,
-                    windowsHide: true,
-                    detached: false,
-                }
-            );
-            aria2.stderr.on("data", (chunk) => {
-                log.error("Aria2 error: " + chunk.toString());
-            });
-            aria2.stdout.once("data", () => {
-                dlClient = new JSONRPCClient((request) =>
-                    fetch("http://127.0.0.1:" + global.dlPort + "/jsonrpc", {
-                        method: "POST",
-                        headers: {
-                            "content-type": "application/json",
-                        },
-                        body: JSON.stringify(request),
-                    }).then((response) => {
-                        if (response.status === 200) {
-                            return response.json().then((data) => dlClient.receive(data));
-                        } else if (request.id !== undefined) {
-                            return Promise.reject(new Error(response.statusText));
-                        }
-                    })
-                );
-
-                let tellDiff = () => {
-                    dlClient.request("aria2.getGlobalStat").then(
-                        async (ret) => {
-                            try {
-                                let changedItems: Array<Download.ChangedItem> = [];
-                                let curActive = parseInt(ret.numActive);
-                                // gets active item info every time
-                                let curActiveList = await dlClient.request(
-                                    "aria2.tellActive"
-                                );
-                                if (downloader.numActive != curActive) {
-                                    if (curActiveList.length == curActive) {
-                                        const { added, removed } = dlDiff(
-                                            downloader.active,
-                                            curActiveList
-                                        );
-                                        changedItems.push({
-                                            item: "active",
-                                            added,
-                                            removed,
-                                        });
-                                    }
-                                }
-                                downloader.active = curActiveList;
-                                downloader.numActive = curActiveList.length;
-
-                                let curWaiting = parseInt(ret.numWaiting);
-                                if (downloader.numWaiting != curWaiting) {
-                                    let curWaitingList = await dlClient.request(
-                                        "aria2.tellWaiting",
-                                        [0, 200]
-                                    );
-                                    if (curWaitingList.length == curWaiting) {
-                                        const { added, removed } = dlDiff(
-                                            downloader.waiting,
-                                            curWaitingList
-                                        );
-                                        changedItems.push({
-                                            item: "waiting",
-                                            added,
-                                            removed,
-                                        });
-                                        downloader.waiting = curWaitingList;
-                                        downloader.numWaiting = curWaiting;
-                                    }
-                                }
-
-                                let curStopped = parseInt(ret.numStopped);
-                                if (downloader.numStopped != curStopped) {
-                                    let curStoppedList = await dlClient.request(
-                                        "aria2.tellStopped",
-                                        [0, 200]
-                                    );
-                                    if (curStoppedList.length == curStopped) {
-                                        const { added, removed } = dlDiff(
-                                            downloader.stopped,
-                                            curStoppedList
-                                        );
-                                        changedItems.push({
-                                            item: "stopped",
-                                            added,
-                                            removed,
-                                        });
-                                        downloader.stopped = curStoppedList;
-                                        downloader.numStopped = curStopped;
-                                    }
-                                }
-                                if (changedItems.length != 0) {
-                                    sendBroadcast("download-status", changedItems);
-                                }
-                                if (downloader.numActive != 0) {
-                                    sendBroadcast("download-active");
-                                }
-                            } catch (error) {
-                                log.warn(
-                                    "Aria2 warning: Cannot get difference, reason: " +
-                                        error
-                                );
-                            }
-                            setTimeout(() => tellDiff(), 500);
-                        },
-                        (reason) => {
-                            log.warn(
-                                "Aria2 warning: Cannot get global stat, reason: " + reason
-                            );
-                            setTimeout(() => tellDiff(), 500);
-                        }
-                    );
-                };
-                tellDiff();
-            });
-        } catch (error) {
-            log.error("Aria2 error: Failed to spawn Aria2 process, reason: " + error);
-        }
-    });
+    ElectronBlocker.fromPrebuiltAdsAndTracking().then((obj) => (adBlocker = obj));
+    // adBlocker = await ElectronBlocker.parse(await (await fetch("https://easylist.to/easylist/easylist.txt")).text());
 
     if (process.platform == "win32") {
         nativeTheme.on("updated", () => sendBroadcast("accent-color-changed"));
@@ -1011,7 +842,7 @@ app.on("ready", async () => {
         await createCachedWindow();
     // else await createWindow(options);
 
-    ws = new WebSocket("ws://127.0.0.1:" + serverPort.toString());
+    ws = new WebSocket("ws+unix:" + getIpcPath(ipcPath));
     ws.on("open", () => {
         ws.send(
             JSON.stringify({

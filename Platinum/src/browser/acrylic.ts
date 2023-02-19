@@ -1,8 +1,8 @@
 import { ipcRenderer } from "electron";
 import { ElectronLog, LogFunctions } from "electron-log";
 import { existsSync, readFileSync, watch } from "fs";
-import getPixels = require("get-pixels-updated");
-const remote = require("@electron/remote");
+import pixels, { ImageType } from "@cronvel/get-pixels";
+import * as remote from "@electron/remote";
 
 export let bgFile: string;
 export let bgMIME: string;
@@ -136,13 +136,11 @@ export async function reload() {
 
         var raw = readFileSync(bgFile);
         var bgs = document.querySelectorAll(bgName);
-        let rawBase64 = raw.toString("base64");
-        let formats = ["jpg", "png", "gif", "bmp"];
+        let formats: ImageType[] = ["jpg", "png", "gif", "bmp"];
         for (let i = 0; i < formats.length; i++) {
-            var dataBase64 = "data:image/" + formats[i] + ";base64," + rawBase64;
             try {
                 await new Promise((resolve, reject) => {
-                    getPixels(dataBase64, (error, pixels) => {
+                    pixels(raw, formats[i], (error, pixels) => {
                         if (error) {
                             reject(error);
                             return;

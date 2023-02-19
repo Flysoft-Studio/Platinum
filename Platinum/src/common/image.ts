@@ -1,8 +1,9 @@
 import { randomUUID } from "crypto";
 import { app } from "electron";
-import { ensureDirSync, readFileSync } from "fs-extra";
-import { extname, normalize } from "path";
-import { runWrapper } from "../platform/wrapper";
+import { ensureDirSync, readFileSync, writeFileSync } from "fs-extra";
+import { basename, dirname, extname, normalize } from "path";
+import sharp from "sharp";
+import icongen from "icon-gen";
 
 export function getImageMIME(filePath: string) {
     let fileExt = extname(filePath);
@@ -40,21 +41,7 @@ export async function getImageData(
 ) {
     let fileData = readFileSync(filePath);
     if (fileMIME == "image/svg+xml" && SVGToPNG) {
-        let fileDataBase64 = await runWrapper(
-            `
-            const sharp = require("sharp");
-
-            process.stdout.write(
-                (await sharp(Buffer.from("` +
-                fileData.toString("base64") +
-                `","base64"))
-                    .toFormat("png")
-                    .toBuffer())
-                .toString("base64"));
-            process.exit(0);
-        `
-        );
-        fileData = Buffer.from(fileDataBase64, "base64");
+        fileData = await sharp(Buffer.from(fileData)).toFormat("png").toBuffer();
         fileMIME = "image/png";
     }
 
@@ -69,26 +56,7 @@ export function imageDataToBase64(fileData: Buffer, fileMIME: string) {
 }
 
 export async function resizeImage(fileData: Buffer, width: number, height: number) {
-    let fileDataBase64 = await runWrapper(
-        `
-        const sharp = require("sharp");
-
-        process.stdout.write(
-            (await sharp(Buffer.from("` +
-            fileData.toString("base64") +
-            `","base64"))
-                .resize(` +
-            width +
-            `, ` +
-            height +
-            `)
-                .toFormat("png")
-                .toBuffer())
-            .toString("base64"));
-        process.exit(0);
-    `
-    );
-    fileData = Buffer.from(fileDataBase64, "base64");
+    fileData = await sharp(fileData).resize(width, height).toFormat("png").toBuffer();
     return {
         data: fileData,
         mime: "image/png",
@@ -104,40 +72,18 @@ export async function genIcon(
         app.getPath("temp") + "/platinum.desktop.icons.{" + randomUUID() + "}"
     );
     ensureDirSync(iconFileDir);
-    await runWrapper(
-        `
-        const { writeFileSync } = require("fs");
-        const { normalize, basename, extname, dirname } = require("path");
-        const sharp = require("sharp");
-        const icongen = require("icon-gen");
-
-        let fileObj = await require("sharp")(Buffer.from("` +
-            fileData.toString("base64") +
-            `","base64"));
-        let fileDir = Buffer.from("` +
-            Buffer.from(iconFileDir).toString("base64") +
-            `","base64").toString();
-        let fileOutPath = Buffer.from("` +
-            Buffer.from(fileOutPath).toString("base64") +
-            `","base64").toString();
-
-        // generate different sizes of png for the .ico file
-        for (const size of ` +
-            JSON.stringify(sizes) +
-            `) {
-            writeFileSync(normalize(fileDir + "/" + size + ".png"), await fileObj.resize(size, size).png().toBuffer());
-        }
-
-        await icongen(fileDir, dirname(fileOutPath), {
-            report: false,
-            ico: {
-                name: basename(fileOutPath, extname(fileOutPath)),
-                sizes: ` +
-            JSON.stringify(sizes) +
-            `,
-            },
-        });
-        process.exit(0);
-    `
-    );
+    let fileObj = sharp(fileData);
+    for (const size of sizes) {
+        writeFileSync(
+            normalize(iconFileDir + "/" + size + ".png"),
+            await fileObj.resize(size, size).png().toBuffer()
+        );
+    }
+    icongen(iconFileDir, dirname(fileOutPath), {
+        report: false,
+        ico: {
+            name: basename(fileOutPath, extname(fileOutPath)),
+            sizes: sizes,
+        },
+    });
 }

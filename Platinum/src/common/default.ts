@@ -86,6 +86,7 @@ export function getDefaultOptions(
                 url: "",
             },
             start: {
+                weather: false,
                 background: {
                     uses: "unsplash",
                     url: "",

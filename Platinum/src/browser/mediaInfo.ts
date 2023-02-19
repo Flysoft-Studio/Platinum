@@ -1,5 +1,4 @@
 (() => {
-    let meta = document.getElementsByTagName("meta");
     let getMeta = (value: string, prop: string) => {
         let element = <HTMLMetaElement>(
             document.querySelector("head>meta[" + prop + '="' + value + '"]')
@@ -30,6 +29,16 @@
             }
         }
     }
+    if (cover)
+        if (cover.startsWith("//")) cover = window.location.protocol + cover;
+        else if (!cover.startsWith("http://") && !cover.startsWith("https://"))
+            cover =
+                window.location.origin +
+                window.location.pathname.substring(
+                    0,
+                    window.location.pathname.lastIndexOf("/") + 1
+                ) +
+                cover;
 
     return {
         title: title,

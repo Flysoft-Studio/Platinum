@@ -1,9 +1,6 @@
-libs/fontawesome.pro.js
+libs/fontawesome.js
 dist
 build
-vercel
-wrapper/linux/*/node
-wrapper/win32/*/node.exe
-docker
+msstore/Build_MSIX_APPXSetupFiles/*
 node_modules
 .vscode

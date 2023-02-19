@@ -11,6 +11,10 @@ body {
     background-color: rgb(190, 190, 190);
 }
 
+.fullscreen {
+    background-color: var(--fullscreen-background);
+}
+
 * {
     --pointer-events: all;
 }

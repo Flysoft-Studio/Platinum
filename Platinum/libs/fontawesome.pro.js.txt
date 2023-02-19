@@ -1,1 +1,0 @@
-Note: Please put fontawesome free or pro version javascript file here and name it to fontawesome.pro.js

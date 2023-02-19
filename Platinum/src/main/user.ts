@@ -112,15 +112,27 @@ export async function generateLink(user: Browser.UserInfo) {
         getUserDataFolder(user.id) + "/desktopIcon_" + randomUUID() + ".ico"
     );
     genIcon(Buffer.from(desktopIconFileSVGContent), desktopIconFileICONPath);
+    let args: string, target: string;
+    if (process.windowsStore) {
+        target = "rundll32.exe";
+        args =
+            "url.dll,FileProtocolHandler http://invoke.platinum.app/" +
+            encodeURIComponent(
+                JSON.stringify({ user: user.id } as Manager.LaunchOptions)
+            );
+    } else {
+        target = app.getPath("exe");
+        args = (app.isPackaged ? [] : [process.cwd()])
+            .concat(["--user=" + user.id])
+            .join(" ");
+    }
 
     shell.writeShortcutLink(getLinkFile(user), "create", {
         description: "Platinum Browser",
         icon: desktopIconFileICONPath,
         iconIndex: 0,
-        target: app.getPath("exe"),
-        args: (app.isPackaged ? [] : [process.cwd()])
-            .concat(["--user=" + user.id])
-            .join(" "),
+        target: target,
+        args: args,
     });
 }
 

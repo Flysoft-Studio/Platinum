@@ -4,16 +4,17 @@ import { getUserFolder, init as initUser, logDir, mgrDataDir } from "./user";
 import { init as initUpdater, Updater } from "./updater";
 import { Store } from "../common/store";
 import { getMgrDefaultOptions } from "../common/default";
-import { app, Notification } from "electron";
+import electron, { app, Notification } from "electron";
 import { create as createLogger } from "electron-log";
 import { normalize } from "path";
 import { WebSocketServer } from "ws";
 import { ChildProcessWithoutNullStreams, execSync, spawn } from "child_process";
 import { mkdirSync, removeSync } from "fs-extra";
-import fp = require("find-free-port");
-import electron = require("electron");
+import { createServer } from "http";
+import { randomUUID } from "crypto";
+import { getIpcPath } from "../common/ipcPath";
+import pkg from "../common/package";
 
-const pkg = require("../../package.json");
 const isPreview = pkg.version.indexOf("preview") != -1;
 const dir = getDir(electron);
 
@@ -26,7 +27,7 @@ let isFirstTryAutoDownloadUpdate: boolean = true;
 initUser("manager");
 
 const logger = createLogger("main");
-let level = args["enable-logging"] == true ? undefined : false;
+let level = args["enable-browser-logging"] == true ? undefined : false;
 logger.transports.console.level = level;
 logger.transports.ipc.level = false;
 logger.transports.file.level = level;
@@ -44,8 +45,8 @@ if (!store.get("update.channel"))
     store.set("update.channel", isPreview ? "preview" : "latest");
 updater = new Updater(store.get("update.channel"));
 
+let ipcPath = "platinum-" + randomUUID();
 let wss: WebSocketServer;
-let serverPort: number;
 let users: Record<string, Manager.User> = {};
 
 function tryAutoDownloadUpdate() {
@@ -135,11 +136,11 @@ function spawnUserProcess(user: string, startup: boolean) {
     users[user].process = spawn(
         app.getPath("exe"),
         (app.isPackaged ? [] : [dir.appPath])
-            .concat(args["enable-logging"] ? ["--enable-logging"] : [])
+            .concat(args["enable-browser-logging"] ? ["--enable-browser-logging"] : [])
             .concat(startup ? ["--startup"] : [])
             .concat([
                 "--run-as-instance",
-                "--server-port=" + serverPort,
+                "--named-pipe=" + ipcPath,
                 "--instance-user=" + user,
             ]),
         {
@@ -156,6 +157,14 @@ function spawnUserProcess(user: string, startup: boolean) {
 }
 
 function processLaunch(options: Manager.LaunchOptions, startup: boolean = false) {
+    // for Windows Store - override launch options
+    if (options.url && options.url.startsWith("http://invoke.platinum.app/")) {
+        try {
+            options = JSON.parse(
+                decodeURIComponent(options.url.replace("http://invoke.platinum.app/", ""))
+            );
+        } catch {}
+    }
     let user = options.user;
     if (!user) user = "default";
     if (!users[user]) {
@@ -244,156 +253,155 @@ app.on("ready", () => {
         await tryAutoInstallUpdate();
     });
 
-    fp(9000, (error, port: number) => {
-        if (error) {
-            log.error("Cannot find a free port for Manager, reason: " + error);
-            return;
-        }
-
-        serverPort = port;
-        wss = new WebSocketServer({
-            host: "127.0.0.1",
-            port: serverPort,
-        });
-        wss.on("connection", (socket, request) => {
-            socket.on("message", (rawData, isBinary) => {
-                let data: Manager.DataPackageI = JSON.parse(rawData.toString());
-                let userName = data.data.user;
-                let user = users[userName];
-                if (!user) {
-                    log.error("Recv package from unknown, user: " + userName);
-                    return;
-                }
-                switch (data.id) {
-                    case "connected": {
-                        user.socket = socket;
-                        if (user.onready) user.onready();
-                        break;
-                    }
-                    case "open": {
-                        let packData = <Manager.DataPackageIOpen>data.data;
-                        processLaunch(packData.options);
-                        break;
-                    }
-                    case "active": {
-                        let packData = <Manager.DataPackageIActive>data.data;
-                        const user = users[packData.targetUser];
-                        if (!user) processLaunch({ user: packData.targetUser });
-                        else
-                            user.socket.send(
-                                JSON.stringify({
-                                    id: "active",
-                                    data: {},
-                                } as Manager.DataPackage)
-                            );
-                        break;
-                    }
-                    case "delete-data": {
-                        let packData = <Manager.DataPackageIBase>data.data;
-                        if (packData.user) {
-                            let deleteUser = () => {
-                                let userDir = getUserFolder(packData.user);
-                                try {
-                                    removeSync(userDir);
-                                } catch {}
-                                try {
-                                    if (packData.user == "default") {
-                                        mkdirSync(userDir);
-                                    }
-                                } catch {}
-                            };
-                            if (!users[packData.user]) deleteUser();
-                            // send it later if the proccess isn't disconnected
-                            else users[packData.user].onexit = () => deleteUser();
-                        }
-                        break;
-                    }
-                    case "refuse-exit": {
-                        if (user.onrefuseexit) user.onrefuseexit();
-                        break;
-                    }
-                    case "try-autoupdate": {
-                        tryAutoInstallUpdate();
-                    }
-                    case "start-update": {
-                        if (!updater.updateStatus.installing) updater.downloadUpdates();
-                        break;
-                    }
-                    case "check-update": {
-                        if (!updater.updateStatus.installing) updater.checkForUpdates();
-                        break;
-                    }
-                    case "install-update": {
-                        if (updater.updateStatus.status == "waitinstall") {
-                            killAllUserProcess().then(() => app.quit());
-                        }
-                        break;
-                    }
-                    case "relaunch": {
-                        let packData = <Manager.DataPackageIBase>data.data;
-                        killAllUserProcess().then(() => {
-                            app.relaunch({
-                                args: (app.isPackaged ? [] : [process.cwd()]).concat([
-                                    "--user=" + packData.user,
-                                ]),
-                            });
-                            app.quit();
-                        });
-                        break;
-                    }
-                    case "relaunch-user": {
-                        killUserProcess(userName).then(() => {
-                            setTimeout(() => processLaunch(user.options), 2000);
-                        });
-                        break;
-                    }
-                    case "global-store-update": {
-                        store.reload();
-                        store.emit("change-internal-notify");
-                        store.emit("change");
-                        store.emit("send-broadcast", false);
-                        for (const key in users) {
-                            const user = users[key];
-                            // don't send broadcast to sender again
-                            if (key == data.data.user) continue;
-                            user.socket.send(
-                                JSON.stringify({
-                                    id: "global-store-update",
-                                    data: {} as Manager.DataPackageBase,
-                                } as Manager.DataPackage)
-                            );
-                        }
-                        break;
-                    }
-                    case "broadcast": {
-                        let packData = <Manager.DataPackageIBoardcast>data.data;
-                        for (const key in users) {
-                            const user = users[key];
-                            // don't send broadcast to sender again
-                            if (key == data.data.user) continue;
-                            user.socket.send(JSON.stringify(packData.package));
-                        }
-                        break;
-                    }
-                    // no need
-                    // case "disconnected":
-                    //     user = undefined;
-                    //     break;
-                    default:
-                        break;
-                }
-            });
-        });
-
-        app.on(
-            "second-instance",
-            (event, commandLine, workingDirectory, additionalData) => {
-                processLaunch(additionalData);
-            }
-        );
-
-        processLaunch(options, args["startup"]);
-
-        if (updater.updateStatus.canUpdate) updater.checkForUpdates();
+    let ipc = createServer().listen(getIpcPath(ipcPath));
+    wss = new WebSocketServer({
+        server: ipc,
     });
+    wss.on("connection", (socket, request) => {
+        socket.on("message", (rawData, isBinary) => {
+            let data: Manager.DataPackageI = JSON.parse(rawData.toString());
+            let userName = data.data.user;
+            let user = users[userName];
+            if (!user) {
+                log.error("Recv package from unknown, user: " + userName);
+                return;
+            }
+            switch (data.id) {
+                case "connected": {
+                    user.socket = socket;
+                    if (user.onready) user.onready();
+                    break;
+                }
+                case "open": {
+                    let packData = <Manager.DataPackageIOpen>data.data;
+                    processLaunch(packData.options);
+                    break;
+                }
+                case "active": {
+                    let packData = <Manager.DataPackageIActive>data.data;
+                    const user = users[packData.targetUser];
+                    if (!user) processLaunch({ user: packData.targetUser });
+                    else
+                        user.socket.send(
+                            JSON.stringify({
+                                id: "active",
+                                data: {},
+                            } as Manager.DataPackage)
+                        );
+                    break;
+                }
+                case "delete-data": {
+                    let packData = <Manager.DataPackageIBase>data.data;
+                    if (packData.user) {
+                        let deleteUser = () => {
+                            let userDir = getUserFolder(packData.user);
+                            try {
+                                removeSync(userDir);
+                            } catch {}
+                            try {
+                                if (packData.user == "default") {
+                                    mkdirSync(userDir);
+                                }
+                            } catch {}
+                        };
+                        if (!users[packData.user]) deleteUser();
+                        // send it later if the proccess isn't disconnected
+                        else users[packData.user].onexit = () => deleteUser();
+                    }
+                    break;
+                }
+                case "refuse-exit": {
+                    if (user.onrefuseexit) user.onrefuseexit();
+                    break;
+                }
+                case "try-autoupdate": {
+                    tryAutoInstallUpdate();
+                }
+                case "start-update": {
+                    if (!updater.updateStatus.installing) updater.downloadUpdates();
+                    break;
+                }
+                case "check-update": {
+                    if (!updater.updateStatus.installing) updater.checkForUpdates();
+                    break;
+                }
+                case "install-update": {
+                    if (updater.updateStatus.status == "waitinstall") {
+                        killAllUserProcess().then(() => app.quit());
+                    }
+                    break;
+                }
+                case "quit": {
+                    killAllUserProcess().then(() => {
+                        app.quit();
+                    });
+                    break;
+                }
+                case "quit-user": {
+                    killUserProcess(userName);
+                    break;
+                }
+                case "relaunch": {
+                    let packData = <Manager.DataPackageIBase>data.data;
+                    killAllUserProcess().then(() => {
+                        app.relaunch({
+                            args: (app.isPackaged ? [] : [process.cwd()]).concat([
+                                "--user=" + packData.user,
+                            ]),
+                        });
+                        app.quit();
+                    });
+                    break;
+                }
+                case "relaunch-user": {
+                    killUserProcess(userName).then(() => {
+                        setTimeout(() => processLaunch(user.options), 2000);
+                    });
+                    break;
+                }
+                case "global-store-update": {
+                    store.reload();
+                    store.emit("change-internal-notify");
+                    store.emit("change");
+                    store.emit("send-broadcast", false);
+                    for (const key in users) {
+                        const user = users[key];
+                        // don't send broadcast to sender again
+                        if (key == data.data.user) continue;
+                        user.socket.send(
+                            JSON.stringify({
+                                id: "global-store-update",
+                                data: {} as Manager.DataPackageBase,
+                            } as Manager.DataPackage)
+                        );
+                    }
+                    break;
+                }
+                case "broadcast": {
+                    let packData = <Manager.DataPackageIBoardcast>data.data;
+                    for (const key in users) {
+                        const user = users[key];
+                        // don't send broadcast to sender again
+                        if (key == data.data.user) continue;
+                        user.socket.send(JSON.stringify(packData.package));
+                    }
+                    break;
+                }
+                // no need
+                // case "disconnected":
+                //     user = undefined;
+                //     break;
+                default:
+                    break;
+            }
+        });
+    });
+
+    app.on("second-instance", (event, commandLine, workingDirectory, additionalData) => {
+        processLaunch(additionalData);
+    });
+
+    processLaunch(options, args["startup"]);
+
+    if (updater.updateStatus.canUpdate) updater.checkForUpdates();
 });

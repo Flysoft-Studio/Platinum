@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="color-scheme" content="light dark" />
         <title class="text">{set_title}</title>
-        <script src="../libs/fontawesome.pro.js"></script>
+        <script src="../libs/fontawesome.js"></script>
         <script>
             let js = require("../build/pages/settings.js");
         </script>
@@ -421,6 +421,26 @@
                                                 data-item="home.start.background.blur"
                                                 class="control"
                                                 id="set_homepage_start_background_blur"
+                                            />
+                                            <div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="group_left">
+                                        <label
+                                            class="label text"
+                                            for="set_homepage_start_weather"
+                                            >{set_homepage_start_weather}</label
+                                        >
+                                    </div>
+                                    <div class="group_right">
+                                        <div class="checkbox">
+                                            <input
+                                                type="checkbox"
+                                                data-item="home.start.weather"
+                                                class="control"
+                                                id="set_homepage_start_weather"
                                             />
                                             <div></div>
                                         </div>
@@ -1160,6 +1180,7 @@
                                             <input
                                                 type="checkbox"
                                                 data-item="dev.ignore_gpu_blocklist"
+                                                data-needrestart="true"
                                                 class="control"
                                                 id="set_dev_ignore_gpu_blocklist"
                                             />
@@ -1180,6 +1201,7 @@
                                             <input
                                                 type="checkbox"
                                                 data-item="dev.enable_unsafe_webgpu"
+                                                data-needrestart="true"
                                                 class="control"
                                                 id="set_dev_enable_unsafe_webgpu"
                                             />
@@ -1200,6 +1222,7 @@
                                             <input
                                                 type="checkbox"
                                                 data-item="dev.disable_smooth_scrolling"
+                                                data-needrestart="true"
                                                 class="control"
                                                 id="set_dev_disable_smooth_scrolling"
                                             />
@@ -1380,7 +1403,7 @@
                                                 >
                                                 <a
                                                     class="link text"
-                                                    href="https://flysoftapp.com/privacy-policy"
+                                                    href="https://flysoftbeta.cn/privacy-policy"
                                                     target="_blank"
                                                     >{set_about_info_page_privacy}</a
                                                 >
@@ -1389,7 +1412,7 @@
                                                 >
                                                 <a
                                                     class="link text"
-                                                    href="https://platinum.flysoftapp.com/"
+                                                    href="https://flysoftbeta.cn/platinum"
                                                     target="_blank"
                                                     >{set_about_info_page_website}</a
                                                 >

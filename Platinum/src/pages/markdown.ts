@@ -3,13 +3,13 @@ import { dirname, resolve } from "path";
 import { ipcRenderer } from "electron";
 import * as lang from "../common/language";
 import * as com from "../common/common";
-import Showdown = require("showdown");
+import { Converter } from "showdown";
 
-const remote = require("@electron/remote");
-const pkg = require("../../package.json");
+import * as remote from "@electron/remote";
+import pkg from "../common/package";
 
 export function create(file: string, internal: boolean = false) {
-    let converter = new Showdown.Converter({
+    let converter = new Converter({
         moreStyling: true,
         smoothLivePreview: true,
         tables: true,

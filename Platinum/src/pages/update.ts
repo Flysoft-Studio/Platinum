@@ -2,7 +2,7 @@ import { ipcRenderer } from "electron";
 import * as lang from "../common/language";
 import * as com from "../common/common";
 import { registerRipples } from "../common/ripple";
-const pkg = require("../../package.json");
+import pkg from "../common/package";
 
 export function whatsnewAction() {
     window.open(com.scheme + "://changelog", "_blank");

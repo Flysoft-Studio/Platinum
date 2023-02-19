@@ -1,5 +1,5 @@
+import axios from "axios";
 import { parentPort } from "worker_threads";
-import fetch from "node-fetch";
 
 // a class for operating GitHub Gists.
 // see https://docs.github.com/rest/gists/gists
@@ -14,44 +14,42 @@ class Gist {
     }
 
     public async checkToken() {
-        let ret = await fetch("https://api.github.com/rate_limit", {
-            method: "GET",
+        let ret = await axios.get("https://api.github.com/rate_limit", {
             headers: {
                 Authorization: "token " + this.accessToken,
             },
         });
         if (ret.status != 200) throw new Error("Get info failed, status: " + ret.status);
-        if (!ret.headers.get("x-oauth-scopes").includes("gist"))
+        if (!ret.headers["x-oauth-scopes"].includes("gist"))
             throw new Error("The token doesn't have gist access");
-        return null;
     }
 
     public async ratelimit() {
-        let ret = await fetch("https://api.github.com/rate_limit", {
-            method: "GET",
+        let ret = await axios.get("https://api.github.com/rate_limit", {
             headers: {
                 Authorization: "token " + this.accessToken,
             },
         });
         if (ret.status != 200)
             throw new Error("Get ratelimit failed, status: " + ret.status);
-        let info = await ret.json();
-        if (info.resources.core.remaining == 0) throw new Error("Rate limit exceeded");
-        return null;
+        if (ret.data.resources.core.remaining == 0)
+            throw new Error("Rate limit exceeded");
     }
 
     public async select() {
         let id: string;
         for (let i = 1; i <= 10; i++) {
-            let ret = await fetch("https://api.github.com/gists?per_page=100&page=" + i, {
-                method: "GET",
-                headers: {
-                    Authorization: "token " + this.accessToken,
-                },
-            });
+            let ret = await axios.get(
+                "https://api.github.com/gists?per_page=100&page=" + i,
+                {
+                    headers: {
+                        Authorization: "token " + this.accessToken,
+                    },
+                }
+            );
             if (ret.status != 200)
                 throw new Error("Select Gist failed, status: " + ret.status);
-            let gists: Gist.Gists = await ret.json();
+            let gists: Gist.Gists = ret.data;
             if (gists.length == 0) break;
             for (let j = 0; j < gists.length; j++) {
                 const gist = gists[j];
@@ -64,13 +62,9 @@ class Gist {
     }
 
     public async create() {
-        let ret = await fetch("https://api.github.com/gists", {
-            method: "POST",
-            headers: {
-                Accept: "application/vnd.github+json",
-                Authorization: "token " + this.accessToken,
-            },
-            body: JSON.stringify({
+        let ret = await axios.post(
+            "https://api.github.com/gists",
+            {
                 description: this.idDescription,
                 files: {
                     [this.idFile]: {
@@ -78,18 +72,23 @@ class Gist {
                     },
                 },
                 public: false,
-            }),
-        });
+            },
+            {
+                headers: {
+                    Accept: "application/vnd.github+json",
+                    Authorization: "token " + this.accessToken,
+                },
+            }
+        );
         if (ret.status != 201 && ret.status != 304)
             throw new Error("Create Gist failed, status: " + ret.status);
-        let gist: Gist.Gist = await ret.json();
+        let gist: Gist.Gist = ret.data;
         let id: string = gist.id;
         return id;
     }
 
     public async get(id: string) {
-        let ret = await fetch("https://api.github.com/gists/" + id, {
-            method: "GET",
+        let ret = await axios.get("https://api.github.com/gists/" + id, {
             headers: {
                 Authorization: "token " + this.accessToken,
             },
@@ -98,21 +97,23 @@ class Gist {
             throw new Error(
                 "Get Gist info failed, gist: " + id + ",status: " + ret.status
             );
-        let gist: Gist.Gist = await ret.json();
+        let gist: Gist.Gist = ret.data;
         return gist;
     }
 
     public async update(id: string, files: Gist.NewFilesInfo) {
-        let ret = await fetch("https://api.github.com/gists/" + id, {
-            method: "PATCH",
-            headers: {
-                Authorization: "token " + this.accessToken,
-            },
-            body: JSON.stringify({
+        let ret = await axios.patch(
+            "https://api.github.com/gists/" + id,
+            {
                 description: new Date().toISOString(),
                 files: files,
-            }),
-        });
+            },
+            {
+                headers: {
+                    Authorization: "token " + this.accessToken,
+                },
+            }
+        );
         if (ret.status != 200 && ret.status != 304)
             throw new Error(
                 "Update Gist failed, files: " +
@@ -123,8 +124,7 @@ class Gist {
     }
 
     public async getFile(url: string) {
-        let ret = await fetch(url, {
-            method: "GET",
+        let ret = await axios.get(url, {
             headers: {
                 Authorization: "token " + this.accessToken,
             },
@@ -133,7 +133,7 @@ class Gist {
             throw new Error(
                 "Read Gist file content failed, file: " + url + ", status: " + ret.status
             );
-        let content: string = await ret.text();
+        let content: string = ret.data;
         return content;
     }
 }

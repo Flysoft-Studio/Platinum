@@ -5,7 +5,7 @@ import { existsSync, readFileSync, watch, writeFileSync } from "fs-extra";
 import { ipcMain, ipcRenderer } from "electron";
 import { ElectronLog, LogFunctions } from "electron-log";
 import { deserialize, serialize } from "v8";
-import EventEmitter = require("events");
+import EventEmitter from "events";
 
 const isMain = ipcMain != undefined;
 

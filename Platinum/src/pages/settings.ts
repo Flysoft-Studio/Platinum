@@ -7,8 +7,8 @@ import { ipcRenderer } from "electron";
 import { extname, normalize } from "path";
 import { copyFileSync } from "fs-extra";
 import { deserialize, serialize } from "v8";
-const remote = require("@electron/remote");
-const pkg = require("../../package.json");
+import * as remote from "@electron/remote";
+import pkg from "../common/package";
 
 function loadUser() {
     const curUser = deserialize(serialize(users.object[user]));
@@ -122,10 +122,10 @@ let users = remote.getGlobal("users") as { object: Browser.UserInfoList };
 
 export function homepageStartBackgroundFileAction() {
     let file = remote.dialog.showOpenDialogSync(com.curWin, {
+        properties: ["openFile"],
         filters: [
             {
                 name: "Image file",
-                properties: ["openFile"],
                 extensions: [
                     "apng",
                     "avif",

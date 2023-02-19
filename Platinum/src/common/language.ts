@@ -1,6 +1,6 @@
 import { htmlEncode, htmlDecode } from "js-htmlencode";
+import pkg from "../common/package";
 
-const pkg = require("../../package.json");
 const isPreview = pkg.version.indexOf("preview") != -1;
 const isDev = pkg.name.indexOf("dev") != -1;
 
@@ -93,6 +93,7 @@ export const _data = {
         set_homepage_start_background_file: "本地图像",
         set_homepage_start_background_no: "关闭背景图片",
         set_homepage_start_background_blur: "启用背景模糊",
+        set_homepage_start_weather: "显示天气小组件",
         set_homepage_home: "主页",
         set_homepage_homebtn_show: "显示主页按钮",
         set_homepage_page: "主页网址",
@@ -107,9 +108,8 @@ export const _data = {
         set_appearance_visual: "视觉效果",
         set_appearance_visual_blur: "启用模糊效果",
         set_appearance_visual_fullblur: "启用全模糊效果",
-        set_appearance_visual_usebackdrop:
-            "使用系统的模糊效果代替软件自带的模糊效果 (实验性)",
-        set_appearance_visual_spotlight: "启用聚光灯效果 (实验性)",
+        set_appearance_visual_usebackdrop: "使用系统的模糊效果代替软件自带的模糊效果",
+        set_appearance_visual_spotlight: "启用聚光灯效果",
         set_appearance_visual_animation: "禁用动画效果",
         set_appearance_visual_lowperformance: "启用流畅模式",
         set_appearance_visual_lowperformance_info:
@@ -180,6 +180,7 @@ export const _data = {
         more_scale_fullscreen: "全屏",
         more_help_settings: "设置",
         more_help_about: "关于 [use_com_name]",
+        more_help_quit: "退出",
         page_link_open_tab: "在新标签页内打开链接",
         page_link_open_window: "在新窗口内打开链接",
         page_link_copy: "复制链接",
@@ -537,6 +538,7 @@ export const _data = {
         set_homepage_start_background_file: "本地檔案",
         set_homepage_start_background_no: "關閉背景圖片",
         set_homepage_start_background_blur: "啟用模糊效果",
+        set_homepage_start_weather: "顯示天氣小組件",
         set_homepage_home: "主頁",
         set_homepage_homebtn_show: "顯示主頁按鈕",
         set_homepage_page: "主頁網址",
@@ -551,9 +553,8 @@ export const _data = {
         set_appearance_visual: "視覺效果",
         set_appearance_visual_blur: "启用模糊效果",
         set_appearance_visual_fullblur: "啟用全模糊效果",
-        set_appearance_visual_usebackdrop:
-            "使用系統的模糊效果代替軟件自帶的模糊效果 (實驗)",
-        set_appearance_visual_spotlight: "啟用聚光燈效果 (實驗)",
+        set_appearance_visual_usebackdrop: "使用系統的模糊效果代替軟件自帶的模糊效果",
+        set_appearance_visual_spotlight: "啟用聚光燈效果",
         set_appearance_visual_animation: "禁用動畫效果",
         set_appearance_visual_lowperformance: "啟用流暢模式",
         set_appearance_visual_lowperformance_info:
@@ -624,6 +625,7 @@ export const _data = {
         more_scale_fullscreen: "全屏",
         more_help_settings: "設定",
         more_help_about: "關於 [use_com_name]",
+        more_help_quit: "退出",
         page_link_open_tab: "在新索引標籤內打開連結",
         page_link_open_window: "在新視窗內打開連結",
         page_link_copy: "複製連結",
@@ -983,6 +985,7 @@ export const _data = {
         set_homepage_start_background_file: "From a local file",
         set_homepage_start_background_no: "No background image",
         set_homepage_start_background_blur: "Enable Blur",
+        set_homepage_start_weather: "Show weather widget",
         set_homepage_home: "Home Page",
         set_homepage_homebtn_show: "Show home button",
         set_homepage_page: "Homepage URL",
@@ -997,9 +1000,8 @@ export const _data = {
         set_appearance_visual: "Visual effects",
         set_appearance_visual_blur: "Enable background Blur",
         set_appearance_visual_fullblur: "Enable Full Blur",
-        set_appearance_visual_usebackdrop:
-            "Use system backdrops instead of Blur (Experimental)",
-        set_appearance_visual_spotlight: "Enable spotlight (Experimental)",
+        set_appearance_visual_usebackdrop: "Use system backdrops instead of Blur",
+        set_appearance_visual_spotlight: "Enable spotlight",
         set_appearance_visual_animation: "Disable animation",
         set_appearance_visual_lowperformance: "Enable low-performance mode",
         set_appearance_visual_lowperformance_info:
@@ -1075,6 +1077,7 @@ export const _data = {
         more_scale_fullscreen: "Enter full screen",
         more_help_settings: "Settings",
         more_help_about: "About [use_com_name]",
+        more_help_quit: "Quit",
         page_link_open_tab: "Open link in new tab",
         page_link_open_window: "Open link in new window",
         page_link_copy: "Copy link",
