@@ -52,13 +52,18 @@ export class Favourite extends EventEmitter {
         });
     }
 
-    public rebuildHashTable(hashes: Array<string>, root: Favourite.Root) {
-        this.index.hashes = [];
+    public rebuildHashTable(
+        hashes: Array<string>,
+        root: Favourite.Root,
+        first: boolean = true
+    ) {
+        if (first) hashes.length = 0;
         for (let i = 0; i < root.length; i++) {
             const data = root[i];
             let hash = this.createItemHash(data);
             hashes.push(hash);
-            if (data.type == 1) this.rebuildHashTable(hashes, data.folder.children);
+            if (data.type == 1)
+                this.rebuildHashTable(hashes, data.folder.children, false);
         }
         return this.write(["index"]);
     }
@@ -71,15 +76,15 @@ export class Favourite extends EventEmitter {
 
     private isSyncEnabled() {
         return (
+            isMain &&
             (this.store.get("user.sync.enable") as boolean) &&
-            (this.store.get("user.sync.token") as string) != "" &&
-            isMain
+            (this.store.get("user.sync.token") as string) != ""
         );
     }
 
     private callSyncWorker(args: Favourite.WorkerIn) {
         return new Promise<Favourite.WorkerOut>((resolve, reject) => {
-            this.syncWorker = new Worker(__dirname + "/favouriteSync.js");
+            this.syncWorker = new Worker(__dirname + "/favourite.worker.js");
             this.syncWorker.on("message", async (args: Favourite.WorkerOut) => {
                 this.syncWorker.removeAllListeners("exit");
                 await this.syncWorker.terminate();
@@ -113,16 +118,20 @@ export class Favourite extends EventEmitter {
         }
     }
 
-    public async sync() {
+    private token() {
+        let accessToken = this.store.get("user.sync.token") as string;
+        let tokenHash = createHash("sha512").update(accessToken).digest("hex");
+        let tokenUpdated = tokenHash != (this.store.get("user.sync.tokenhash") as string);
+        return { token: accessToken, tokenHash: tokenHash, tokenUpdated: tokenUpdated };
+    }
+
+    public async sync({ token, tokenHash, tokenUpdated } = this.token()) {
         try {
-            let accessToken = this.store.get("user.sync.token") as string;
             if (!this.isSyncEnabled()) {
                 this.updateSyncStatus("unset");
                 return false;
             }
-            let tokenHash = createHash("sha512").update(accessToken).digest("hex");
-            let tokenUpdated =
-                tokenHash != (this.store.get("user.sync.tokenhash") as string);
+
             let gist = this.store.get("user.sync.gist") as string;
 
             if (this.syncWorker) {
@@ -138,7 +147,7 @@ export class Favourite extends EventEmitter {
 
             // make sure the gist is valid
             args = await this.callSyncWorker({
-                accessToken: accessToken,
+                accessToken: token,
                 op: "verify-gist",
                 gist: gist,
             } as Favourite.WorkerIn);
@@ -146,7 +155,7 @@ export class Favourite extends EventEmitter {
             if (!args.value as boolean) {
                 // look for an existing gist, if not found, create a new one
                 args = await this.callSyncWorker({
-                    accessToken: accessToken,
+                    accessToken: token,
                     op: "get-gist",
                 });
                 gist = args.value as string;
@@ -155,157 +164,25 @@ export class Favourite extends EventEmitter {
 
             // read favourite data
             args = await this.callSyncWorker({
-                accessToken: accessToken,
+                accessToken: token,
                 op: "get-files",
                 gist: gist,
             } as Favourite.WorkerIn);
             let latestData: Favourite.Root;
             let latestIndex: Favourite.Index;
-            try {
-                latestData = JSON.parse(args.value["favourites.json"]);
-            } catch (error) {
-                latestData = this.defaultData;
-            }
-            try {
-                latestIndex = JSON.parse(args.value["favouritesIndex.json"]);
-            } catch (error) {
-                latestIndex = this.defaultIndex;
-            }
+            latestData = args.value["favourites.json"];
+            if (!(latestData instanceof Object)) latestData = this.defaultData;
+            latestIndex = args.value["favouritesIndex.json"];
+            if (!(latestIndex instanceof Object)) latestIndex = this.defaultIndex;
 
             // if a new token is used, add all the changes to the server
             if (tokenUpdated)
                 this.index.changes.added = deserialize(serialize(this.index.hashes));
             // merge changes
-            try {
-                for (let i = 0; i < this.index.changes.added.length; i++) {
-                    let hash = this.index.changes.added[i];
-                    if (!latestIndex.hashes.includes(hash)) {
-                        // folder: the parent folder of the item, folder not specified if it's root
-                        let addLatestItem = (
-                            root: Favourite.Root,
-                            folder: Favourite.Item,
-                            item: Favourite.Item
-                        ) => {
-                            if (!folder) {
-                                // root
-                                latestData.push(item);
-                                latestIndex.hashes.push(hash);
-                            } else {
-                                // look for folder and apply item
-                                let folderHash = this.createItemHash(folder);
-                                for (let i = 0; i < root.length; i++) {
-                                    const data = root[i];
-                                    if (
-                                        this.createItemHash(data) == folderHash &&
-                                        data.type == 1
-                                    ) {
-                                        data.folder.children.push(item);
-                                        latestIndex.hashes.push(hash);
-                                        break;
-                                    } else if (data.type == 1)
-                                        addLatestItem(data.folder.children, folder, item);
-                                }
-                            }
-                        };
-                        let addLocalItem = (folder: Favourite.Item) => {
-                            // look for item and apply it to remote
-                            let root = folder ? folder.folder.children : this.data;
-                            for (let i = 0; i < root.length; i++) {
-                                const data = root[i];
-                                if (this.createItemHash(data) == hash) {
-                                    addLatestItem(latestData, folder, data);
-                                    break;
-                                } else if (data.type == 1) addLocalItem(data);
-                            }
-                        };
-                        addLocalItem(null);
-                    }
-                }
-                for (let i = 0; i < this.index.changes.removed.length; i++) {
-                    let hash = this.index.changes.removed[i];
-                    if (latestIndex.hashes.includes(hash)) {
-                        let removeAllIndex = (root: Favourite.Root) => {
-                            for (let i = 0; i < root.length; i++) {
-                                const item = root[i];
-                                if (item.type == 0) {
-                                    let hash = this.createItemHash(item);
-                                    if (
-                                        !this.index.hashes.includes(hash) ||
-                                        this.index.changes.removed.includes(hash)
-                                    )
-                                        continue;
-                                    // added -> removed = none
-                                    if (this.index.changes.added.includes(hash)) {
-                                        this.index.changes.added.splice(
-                                            this.index.changes.added.indexOf(hash),
-                                            1
-                                        );
-                                    } else this.index.changes.removed.push(hash);
-                                } else if (item.type == 1)
-                                    removeAllIndex(item.folder.children);
-                            }
-                        };
-                        let removeLatestItem = (root: Favourite.Root) => {
-                            for (let i = 0; i < root.length; i++) {
-                                const data = root[i];
-                                if (this.createItemHash(data) == hash) {
-                                    if (data.type == 1)
-                                        removeAllIndex(data.folder.children);
-                                    root.splice(i, 1);
-                                    latestIndex.hashes.splice(
-                                        latestIndex.hashes.indexOf(hash),
-                                        1
-                                    );
-                                    break;
-                                } else if (data.type == 1)
-                                    removeLatestItem(data.folder.children);
-                            }
-                        };
-                        removeLatestItem(latestData);
-                    }
-                }
-                for (let i = 0; i < this.index.changes.changed.length; i++) {
-                    let hash = this.index.changes.changed[i];
-                    if (latestIndex.hashes.includes(hash)) {
-                        let changeLatestItem = (
-                            root: Favourite.Root,
-                            item: Favourite.Item
-                        ) => {
-                            for (let i = 0; i < root.length; i++) {
-                                const data = root[i];
-                                if (this.createItemHash(data) == hash) {
-                                    root[i] = item;
-                                    break;
-                                } else if (data.type == 1)
-                                    changeLatestItem(data.folder.children, item);
-                            }
-                        };
-                        let changeLocalItem = (root: Favourite.Root) => {
-                            // look for item and change it in remote
-                            for (let i = 0; i < root.length; i++) {
-                                const data = root[i];
-                                if (this.createItemHash(data) == hash) {
-                                    changeLatestItem(latestData, data);
-                                    break;
-                                } else if (data.type == 1)
-                                    changeLocalItem(data.folder.children);
-                            }
-                        };
-                        changeLocalItem(this.data);
-                    }
-                }
-                for (let i = 0; i < this.index.changes.moved.length; i++) {
-                    let hash = this.index.changes.moved[i];
-                    let removeLatestItem = (root: Favourite.Root) => {
-                        for (let i = 0; i < root.length; i++) {
-                            const data = root[i];
-                            if (this.createItemHash(data) == hash) {
-                                root.splice(i, 1);
-                                break;
-                            } else if (data.type == 1)
-                                removeLatestItem(data.folder.children);
-                        }
-                    };
+            for (let i = 0; i < this.index.changes.added.length; i++) {
+                let hash = this.index.changes.added[i];
+                console.log(hash);
+                if (!latestIndex.hashes.includes(hash)) {
                     // folder: the parent folder of the item, folder not specified if it's root
                     let addLatestItem = (
                         root: Favourite.Root,
@@ -326,6 +203,7 @@ export class Favourite extends EventEmitter {
                                     data.type == 1
                                 ) {
                                     data.folder.children.push(item);
+                                    latestIndex.hashes.push(hash);
                                     break;
                                 } else if (data.type == 1)
                                     addLatestItem(data.folder.children, folder, item);
@@ -333,12 +211,11 @@ export class Favourite extends EventEmitter {
                         }
                     };
                     let addLocalItem = (folder: Favourite.Item) => {
-                        // look for item, remove it and apply it to new folder
+                        // look for item and apply it to remote
                         let root = folder ? folder.folder.children : this.data;
                         for (let i = 0; i < root.length; i++) {
                             const data = root[i];
                             if (this.createItemHash(data) == hash) {
-                                removeLatestItem(latestData);
                                 addLatestItem(latestData, folder, data);
                                 break;
                             } else if (data.type == 1) addLocalItem(data);
@@ -346,14 +223,137 @@ export class Favourite extends EventEmitter {
                     };
                     addLocalItem(null);
                 }
-            } catch (error) {}
+            }
+            for (let i = 0; i < this.index.changes.removed.length; i++) {
+                let hash = this.index.changes.removed[i];
+                if (latestIndex.hashes.includes(hash)) {
+                    let removeAllIndex = (root: Favourite.Root) => {
+                        for (let i = 0; i < root.length; i++) {
+                            const item = root[i];
+                            if (item.type == 0) {
+                                let hash = this.createItemHash(item);
+                                if (
+                                    !this.index.hashes.includes(hash) ||
+                                    this.index.changes.removed.includes(hash)
+                                )
+                                    continue;
+                                // added -> removed = none
+                                if (this.index.changes.added.includes(hash)) {
+                                    this.index.changes.added.splice(
+                                        this.index.changes.added.indexOf(hash),
+                                        1
+                                    );
+                                } else this.index.changes.removed.push(hash);
+                            } else if (item.type == 1)
+                                removeAllIndex(item.folder.children);
+                        }
+                    };
+                    let removeLatestItem = (root: Favourite.Root) => {
+                        for (let i = 0; i < root.length; i++) {
+                            const data = root[i];
+                            if (this.createItemHash(data) == hash) {
+                                if (data.type == 1) removeAllIndex(data.folder.children);
+                                root.splice(i, 1);
+                                latestIndex.hashes.splice(
+                                    latestIndex.hashes.indexOf(hash),
+                                    1
+                                );
+                                break;
+                            } else if (data.type == 1)
+                                removeLatestItem(data.folder.children);
+                        }
+                    };
+                    removeLatestItem(latestData);
+                }
+            }
+            for (let i = 0; i < this.index.changes.changed.length; i++) {
+                let hash = this.index.changes.changed[i];
+                if (latestIndex.hashes.includes(hash)) {
+                    let changeLatestItem = (
+                        root: Favourite.Root,
+                        item: Favourite.Item
+                    ) => {
+                        for (let i = 0; i < root.length; i++) {
+                            const data = root[i];
+                            if (this.createItemHash(data) == hash) {
+                                root[i] = item;
+                                break;
+                            } else if (data.type == 1)
+                                changeLatestItem(data.folder.children, item);
+                        }
+                    };
+                    let changeLocalItem = (root: Favourite.Root) => {
+                        // look for item and change it in remote
+                        for (let i = 0; i < root.length; i++) {
+                            const data = root[i];
+                            if (this.createItemHash(data) == hash) {
+                                changeLatestItem(latestData, data);
+                                break;
+                            } else if (data.type == 1)
+                                changeLocalItem(data.folder.children);
+                        }
+                    };
+                    changeLocalItem(this.data);
+                }
+            }
+            for (let i = 0; i < this.index.changes.moved.length; i++) {
+                let hash = this.index.changes.moved[i];
+                let removeLatestItem = (root: Favourite.Root) => {
+                    for (let i = 0; i < root.length; i++) {
+                        const data = root[i];
+                        if (this.createItemHash(data) == hash) {
+                            root.splice(i, 1);
+                            break;
+                        } else if (data.type == 1) removeLatestItem(data.folder.children);
+                    }
+                };
+                // folder: the parent folder of the item, folder not specified if it's root
+                let addLatestItem = (
+                    root: Favourite.Root,
+                    folder: Favourite.Item,
+                    item: Favourite.Item
+                ) => {
+                    if (!folder) {
+                        // root
+                        latestData.push(item);
+                        latestIndex.hashes.push(hash);
+                    } else {
+                        // look for folder and apply item
+                        let folderHash = this.createItemHash(folder);
+                        for (let i = 0; i < root.length; i++) {
+                            const data = root[i];
+                            if (
+                                this.createItemHash(data) == folderHash &&
+                                data.type == 1
+                            ) {
+                                data.folder.children.push(item);
+                                break;
+                            } else if (data.type == 1)
+                                addLatestItem(data.folder.children, folder, item);
+                        }
+                    }
+                };
+                let addLocalItem = (folder: Favourite.Item) => {
+                    // look for item, remove it and apply it to new folder
+                    let root = folder ? folder.folder.children : this.data;
+                    for (let i = 0; i < root.length; i++) {
+                        const data = root[i];
+                        if (this.createItemHash(data) == hash) {
+                            removeLatestItem(latestData);
+                            addLatestItem(latestData, folder, data);
+                            break;
+                        } else if (data.type == 1) addLocalItem(data);
+                    }
+                };
+                addLocalItem(null);
+            }
 
             // rebuild hash table
-            this.rebuildHashTable(latestIndex.hashes, latestData);
+            // this.rebuildHashTable(latestIndex.hashes, latestData);
 
             // apply changes to local and remote
             args = await this.callSyncWorker({
-                accessToken: accessToken,
+                accessToken: token,
                 op: "set-files",
                 gist: gist,
                 value: {

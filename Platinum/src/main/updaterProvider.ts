@@ -2,7 +2,7 @@ import axios from "axios";
 
 async function getData(provider: Browser.FSDownloadProvider, parent = "0", page = 0) {
     let url =
-        "https://fs-my-proxy.vercel.app/api/?method=GET&url=" +
+        "https://api.flysoftbeta.cn/api/?method=GET&url=" +
         encodeURIComponent(
             "https://www.123pan.com/api/share/get?Page=1&limit=1000&next=" +
                 page +
@@ -30,7 +30,7 @@ function getFileObject(data: any[], fileName: string) {
 
 async function getDownloadURL(file: any, provider: Browser.FSDownloadProvider) {
     let url =
-        "https://fs-my-proxy.vercel.app/api/?method=POST&url=" +
+        "https://api.flysoftbeta.cn/api/?method=POST&url=" +
         encodeURIComponent("https://www.123pan.com/a/api/share/download/info") +
         "&cookie=" +
         encodeURIComponent(

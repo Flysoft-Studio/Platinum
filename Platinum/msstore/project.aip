@@ -2129,7 +2129,7 @@
     <ROW XmlAttribute="Square71x71Logo" XmlElement="DefaultTile" Name="Square71x71Logo" Flags="0" Order="0" FileId="Platinum.BrowserSquare71x71Logo.scale100.png"/>
     <ROW XmlAttribute="SupportsMultipleInstances" XmlElement="Application" Name="SupportsMultipleInstances" Flags="0" Order="0" Value="true"/>
     <ROW XmlAttribute="Tile" XmlElement="ShowOn" Name="Tile" Flags="0" Order="0" Value="square150x150Logo"/>
-    <ROW XmlAttribute="Version" XmlElement="Identity" Name="Version" Flags="0" Order="0" Value="2.1.0.0"/>
+    <ROW XmlAttribute="Version" XmlElement="Identity" Name="Version" Flags="0" Order="0" Value="2.2.1.0"/>
     <ROW XmlAttribute="Version_1" XmlElement="AppInstallerUX" Name="Version" Flags="0" Order="0" Value="1.0.0"/>
     <ROW XmlAttribute="Wide310x150Logo" XmlElement="DefaultTile" Name="Wide310x150Logo" Flags="0" Order="0" FileId="Platinum.BrowserWide310x150Logo.scale100.png"/>
     <ROW XmlAttribute="xmlns" XmlElement="AppInstallerUX" Name="xmlns" Flags="0" Order="0" Value="http://schemas.microsoft.com/msix/appinstallerux"/>

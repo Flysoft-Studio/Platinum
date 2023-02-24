@@ -28,7 +28,7 @@ export class Updater extends EventEmitter {
         this.updateStatus.installing = false;
         this.updateStatus.available = false;
         this.updateStatus.canUpdate =
-            process.platform == "win32" ? !process.windowsStore : true;
+            process.platform == "win32" ? !process.windowsStore : false;
         this.updateStatus.canInstallUpdate =
             process.platform == "win32" ? !process.windowsStore : false;
         this.channel = channel;
@@ -113,28 +113,28 @@ export class Updater extends EventEmitter {
                 var md5: string;
                 let ext: string;
                 if (process.platform == "win32") ext = "exe";
-                else if (process.platform == "linux") ext = "AppImage";
+                // else if (process.platform == "linux") ext = "AppImage";
                 else {
                     reject(new Error("Invalid platform"));
                     return;
                 }
-                if (process.platform != "linux") {
-                    this.tempFile = normalize(
-                        this.tempPath + "/platinum.update.{" + randomUUID() + "}." + ext
-                    );
-                } else {
-                    let file = dialog.showSaveDialogSync(null, {
-                        title: "Save update file to",
-                        filters: [
-                            {
-                                extensions: [ext],
-                                name: "AppImage",
-                            },
-                        ],
-                    });
-                    if (!file) return;
-                    this.tempFile = file;
-                }
+                // if (process.platform == "linux") {
+                //     let file = dialog.showSaveDialogSync(null, {
+                //         title: "Save update file to",
+                //         filters: [
+                //             {
+                //                 extensions: [ext],
+                //                 name: "AppImage",
+                //             },
+                //         ],
+                //     });
+                //     if (!file) return;
+                //     this.tempFile = file;
+                // } else {
+                this.tempFile = normalize(
+                    this.tempPath + "/platinum.update.{" + randomUUID() + "}." + ext
+                );
+                // }
 
                 const fileStream = createWriteStream(this.tempFile);
                 fileStream.on("ready", () => {

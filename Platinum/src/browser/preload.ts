@@ -30,11 +30,7 @@ function verifySecret(secret) {
     },
     injectStyleSheet: () => {
         // scrollbar.css
-        addStyleSheet(`body {
-            /* overrides user agent stylesheet */
-            background-color: transparent;
-        }
-        
+        addStyleSheet(`
         pre {
             font-family: Consolas, 'Courier New', monospace, sans-serif;
         }

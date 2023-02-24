@@ -72,12 +72,8 @@ ipcRenderer.on("load", async () => {
     let timeElement = <HTMLElement>document.querySelector("#time");
     let timeUpdate = () => {
         let date = new Date();
-        let fixNumber = (num: number) => {
-            let str = "0" + num;
-            return str.substring(str.length - 2);
-        };
         timeElement.innerHTML = lang.encode(
-            fixNumber(date.getHours()) + ":" + fixNumber(date.getMinutes())
+            date.getHours() + ":" + date.getMinutes().toString().padStart(2, "0")
         );
     };
     setInterval(() => timeUpdate(), 1000);

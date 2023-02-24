@@ -11,7 +11,7 @@ if ($null -eq $env:ADV_PATH) {
     }
 }
 if ((Test-Path $env:ADV_PATH) -eq $false) {
-    Write-Error "AdvancedInstaller $env:ADV_VER not found."
+    throw [System.IO.FileNotFoundException] "AdvancedInstaller $env:ADV_VER not found."
 }
 
 &"$env:ADV_PATH" /build $PROJECT_PATH

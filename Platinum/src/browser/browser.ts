@@ -2259,7 +2259,7 @@ async function startup() {
     // first use
     if (!lastVer) com.store.set("browser.version", curVer);
     // version updated
-    if (lastVer != curVer) {
+    if (lastVer != curVer && com.store.get("update.tip")) {
         url = com.scheme + "://update";
         com.store.set("browser.version", curVer);
     }

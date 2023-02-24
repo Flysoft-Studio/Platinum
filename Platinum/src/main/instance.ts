@@ -33,7 +33,7 @@ import electron, {
 import { create as createLogger } from "electron-log";
 import { ElectronBlocker } from "@cliqz/adblocker-electron";
 import { JSONRPCClient } from "json-rpc-2.0";
-import { basename, dirname, extname, normalize } from "path";
+import { dirname, extname, normalize } from "path";
 import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs-extra";
 import { parse as parseURL } from "url";
@@ -41,6 +41,7 @@ import { WebSocket } from "ws";
 import EventEmitter from "events";
 import pkg from "../common/package";
 import * as remote from "@electron/remote/main";
+import axios, { ResponseType } from "axios";
 
 const defaultSession = "persist:user";
 
@@ -51,7 +52,7 @@ process.noDeprecation = true;
 EventEmitter.defaultMaxListeners = 0;
 
 let browsers: Array<Window> = [];
-let store: Store;
+export let store: Store;
 let globalStore: Store;
 let favourite: Favourite;
 let cachedWindow: Window;
@@ -64,7 +65,6 @@ let users = { object: getUserList() };
 global.users = users;
 let updateStatus = { object: null };
 global.updateStatus = updateStatus;
-let dlClient: JSONRPCClient;
 
 let user: string = args["instance-user"];
 if (!user) throw Error("Instance user not specified.");
@@ -305,7 +305,7 @@ class Window {
                         cookiesList.push(cookies[i].name + "=" + cookies[i].value);
                     }
                     webcontents.emit("did-finish-load");
-                    await downloadHandler(fileURL, fileName, cookiesList.join("; "));
+                    await downloader.download(fileURL, fileName, cookiesList.join("; "));
                 }
             });
             sessions.push(sessionPartition);
@@ -331,66 +331,6 @@ function hasNonCachedWindow() {
         if (browsers[i] && !browsers[i].cached) count++;
     }
     return count != 0;
-}
-
-async function downloadHandler(
-    url: string,
-    filename: string,
-    cookies?: string,
-    folder?: string
-) {
-    let isDataURI = url.startsWith("data:");
-    log.log(
-        "Starting download, url: " +
-            (isDataURI ? "DataURI" : url) +
-            ", filename: " +
-            filename
-    );
-    try {
-        if (!folder) folder = store.get("download.path");
-        if (!existsSync(folder)) mkdirSync(folder);
-
-        // Aria2 can't handle Data URIs, so I write a handler by myself
-        if (isDataURI) {
-            let commaPos = url.indexOf(",");
-            let rawData = url.substring(commaPos + 1);
-            let isEncoded = url.lastIndexOf(";base64", commaPos) != -1;
-            let decodedData = isEncoded ? Buffer.from(rawData, "base64") : rawData;
-
-            const tries = 9999;
-            let fileExt = extname(filename);
-            let fileBase = basename(filename, fileExt);
-            for (let i = 1; i < tries; i++) {
-                let filePath =
-                    folder +
-                    "/" +
-                    fileBase +
-                    (i != 1 ? " (" + i.toString() + ")" : "") +
-                    fileExt;
-                if (!existsSync(filePath)) {
-                    writeFileSync(filePath, decodedData);
-                    break;
-                } else if (i + 1 >= tries) {
-                    throw new Error(
-                        "We had tried too many times finding a available filename, but failed."
-                    );
-                }
-            }
-        } else if (dlClient) {
-            await dlClient.request("aria2.addUri", [
-                [url],
-                {
-                    header: cookies ? ["Cookie: " + cookies] : [],
-                    out: filename,
-                    dir: folder,
-                },
-            ]);
-        } else {
-            throw new Error("No available downloader found.");
-        }
-    } catch (error) {
-        log.error("Download failed, reason: " + error);
-    }
 }
 
 export function sendBroadcast(channel: string, args1?: any, args2?: any, args3?: any) {
@@ -497,42 +437,12 @@ app.on("ready", async () => {
 
     remote.initialize();
     Menu.setApplicationMenu(null);
-    // if (app.isPackaged == false) require("electron-reload")(__dirname + "/..", {});
 
     if (!app.requestSingleInstanceLock()) {
         log.warn("An instance already exists");
         app.quit();
         return;
     }
-
-    // app.on("second-instance", async (event, commandLine, workingDirectory, additionalData) => {
-    //     let options = additionalData as Browser.BrowserOptions;
-    //     log.log("Launched from second instance, options: " + JSON.stringify(options));
-    //     // open guest window in a standalone window
-    //     if (options.guest) createWindow(options);
-    //     else {
-    //         // url presented, may be called by programs
-    //         if (options.url) {
-    //             // finds a valid window
-    //             let browser: Window = null;
-    //             for (let i = 0; i < browsers.length; i++) {
-    //                 const element = browsers[i];
-    //                 if (element && !element.cached && !element.options.guest) browser = element;
-    //             }
-    //             if (browser) {
-    //                 // a valid window found, open url in a new tab
-    //                 browser.browser.webContents.send("new-tab", options.url);
-    //             } else {
-    //                 // not found, open url in a new window
-    //                 await createWindow(options);
-    //             }
-    //         } else {
-    //             // not presented, may be opened by user
-    //             // creates a new window for it
-    //             await createWindow(options);
-    //         }
-    //     }
-    // });
 
     if (store.data["applyrestart"] != null) {
         Object.assign(store.data, store.data["applyrestart"]);
@@ -691,17 +601,11 @@ app.on("ready", async () => {
             }
             folder = dirname(filePath);
         }
-        downloadHandler(url, filename, null, folder);
+        downloader.download(url, filename, null, folder);
         event.returnValue = null;
     });
     ipcMain.on("download-method", async (event, method: string, params: any[]) => {
-        try {
-            if (dlClient) event.returnValue = await dlClient.request(method, params);
-            else event.returnValue = null;
-        } catch (error) {
-            log.warn("Aria2 error: Cannot send method request, reason: " + error);
-            event.returnValue = null;
-        }
+        event.returnValue = await downloader.method(method, params);
     });
     ipcMain.on("get-icon", (event, file: string) => {
         app.getFileIcon(file, {
@@ -784,16 +688,19 @@ app.on("ready", async () => {
     });
     ipcMain.on("users-delete", (event, userID: string) => {
         if (users.object[userID]) {
+            for (let i = 0; i < browsers.length; i++) {
+                browsers[i].browser.destroy();
+            }
+            delete users.object[userID];
+
             // removing default user may cause some issues
             if (userID != "default") {
                 if (store.get("user.desktoplink") as boolean)
                     deleteLink(users.object[userID]);
-                users.object[userID] = undefined;
-                setUserList(users.object);
-                for (let i = 0; i < browsers.length; i++) {
-                    browsers[i].browser.destroy();
-                }
+            } else {
+                users.object[userID] = { id: userID };
             }
+            setUserList(users.object);
             ws.send(
                 JSON.stringify({
                     id: "broadcast",
@@ -822,12 +729,31 @@ app.on("ready", async () => {
         }
         event.returnValue = null;
     });
+
+    downloader.startAria2();
     // extensions = new ElectronChromeExtensions({
     //     session: session.fromPartition(defaultSession),
-
     // });
 
-    ElectronBlocker.fromPrebuiltAdsAndTracking().then((obj) => (adBlocker = obj));
+    ElectronBlocker.fromLists(
+        async (url) => {
+            let fetch = async (type: ResponseType) => {
+                return (await axios.get(url, { responseType: type })).data;
+            };
+            return {
+                arrayBuffer: () => {
+                    return fetch("arraybuffer");
+                },
+                text: async () => {
+                    return fetch("text");
+                },
+                json: async () => {
+                    return fetch("json");
+                },
+            };
+        },
+        ["https://easylist.to/easylist/easylist.txt"]
+    ).then((obj) => (adBlocker = obj));
     // adBlocker = await ElectronBlocker.parse(await (await fetch("https://easylist.to/easylist/easylist.txt")).text());
 
     if (process.platform == "win32") {

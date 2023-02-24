@@ -98,6 +98,9 @@ export function getDefaultOptions(
         download: {
             path: downloadPath,
         },
+        update: {
+            tip: true,
+        },
         applyrestart: null,
     };
 }

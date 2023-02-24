@@ -11,6 +11,6 @@
         "experimentalDecorators": true,
         "skipLibCheck": true
     },
-    "include": ["src"],
+    "include": ["src", "icon-gen"],
     "exclude": ["build", "node_modules"]
 }

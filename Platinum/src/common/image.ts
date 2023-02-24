@@ -3,7 +3,7 @@ import { app } from "electron";
 import { ensureDirSync, readFileSync, writeFileSync } from "fs-extra";
 import { basename, dirname, extname, normalize } from "path";
 import sharp from "sharp";
-import icongen from "icon-gen";
+import icongen from "../../icon-gen";
 
 export function getImageMIME(filePath: string) {
     let fileExt = extname(filePath);
