@@ -351,7 +351,7 @@ function reloadConfig() {
         if (locale.indexOf("zh-CN") != -1) langLocale = "zh-cn";
         else if (locale.indexOf("zh-HK") != -1 || locale.indexOf("zh-TW") != -1)
             langLocale = "zh-tw";
-        else if (locale.indexOf("en") != -1) langLocale = "en-us";
+        else langLocale = "en-us";
         store.set("language.uses", langLocale);
     }
     lang.reload(langLocale);
